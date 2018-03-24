@@ -18,6 +18,7 @@ int board[ROWS][COLUMNS],
     piece_shape,
     piece_variant,
     piece_position,
+    pieceinfo[4],
     distancetodrop;
 bool newpieceonscreen = false;
 
@@ -28,9 +29,11 @@ void pickNewPiece();
 void drawBlocks();
 void getBoardInfo();
 int getPieceWidth();
+void getPieceInfo();
 void testPrintBoard();
 void testPrintCurrentPiece();
 void testPrintBoardInfo();
+void testPrintPieceInfo();
 
 int main(int argc, char* argv[]) {
 
@@ -44,6 +47,7 @@ int main(int argc, char* argv[]) {
         updateScreen();
         pickNewPiece();
         testPrintCurrentPiece();
+        testPrintPieceInfo();
         //testPrintBoardInfo();
         keyDetect();
     }
@@ -84,8 +88,15 @@ void keyDetect() {
     } else if (key == SDLK_RIGHT) {
         if (piece_position + getPieceWidth() < COLUMNS - 1)
             piece_position++;
+    } else if (key == SDLK_RETURN) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+
+            }
+        }
     } else if (key == SDLK_ESCAPE)
         exit(1);
+    getPieceInfo();
 }
 
 
@@ -114,6 +125,7 @@ void pickNewPiece() {
         getBoardInfo();
         piece_shape = randomInt(0, 3);
         piece_variant = 0;
+        getPieceInfo();
         newpieceonscreen = true;
     }
 }
@@ -172,6 +184,24 @@ int getPieceWidth() {
     return piecewidth;
 }
 
+void getPieceInfo() {
+    int pieceheight = -1;
+    for (int i = 0; i < 4; i++) {
+        pieceheight = -1;
+        for (int j = 0; j < 4; j++) {
+            if (pieces[piece_shape][piece_variant][j][i])
+                pieceheight = j;
+        }
+        pieceinfo[i] = pieceheight;
+    }
+}
+
+/*void getDistanceToDropInfo() {
+    for (int i = 0; i < 4; i++) {
+        distancetodropinfo[i] =
+    }
+}*/
+
 void testPrintBoard() {
     printf("=====PRINTBOARD TEST=====");
     for (int i = 0; i < ROWS; i++) {
@@ -194,4 +224,11 @@ void testPrintBoardInfo() {
     for (int i = 0; i < COLUMNS; i++)
         printf("%d\t", boardinfo[i]);
     printf("=====BOARDINFO TEST=====\n");
+}
+
+void testPrintPieceInfo() {
+    printf("=====PIECEINFO TEST=====\n");
+    for (int i = 0; i < 4; i++)
+        printf("%d\t", pieceinfo[i]);
+    printf("\n=====PIECEINFO TEST=====\n");
 }
