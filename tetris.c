@@ -9,12 +9,9 @@
 
 #define ROWS 20
 #define COLUMNS 10
-#define BLOCK_ROWS 4
-#define BLOCK_COLUMNS 4
 
 //the main structures of the game  newblockonscreen
 int board[ROWS][COLUMNS],
-    newblock[BLOCK_ROWS][BLOCK_COLUMNS],
     distancetodrop;
 bool newblockonscreen = false;
 
@@ -33,8 +30,8 @@ int main(int argc, char* argv[]) {
 
     while(1) {
         drawBoard();
-        //createNewBlock();
         updateScreen();
+        printf("\n%d\n", pieces[0][0][0][0]);
         keyDetect();
     }
 
@@ -66,18 +63,13 @@ int randomInt(int range_start, int range_end) {
     return random_int;
 }
 
-/*void createNewBlock() {
-    if (newblockonscreen == false) {
-        int newblock_size = randomInt(2, 15),
-            newblock_color = randomizeColor();
+void createNewBlock() {
 
+}
 
-        newblockonscreen = true;
-    }
-}*/
 
 void testPrintBoard() {
-    for(int i = 0; i < ROWS; i++) {
+    for (int i = 0; i < ROWS; i++) {
         printf("\n");
         for (int j = 0; j < COLUMNS; j++) {
             printf("%d\t", board[i][j]);
