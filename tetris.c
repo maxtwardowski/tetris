@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 //BLACK, RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW, WHITE
 //0-7
@@ -12,6 +13,7 @@
 
 //the main structures of the game  newblockonscreen
 int board[ROWS][COLUMNS],
+    boardinfo[COLUMNS],
     currentpiece_shape,
     currentpiece_variant,
     distancetodrop;
@@ -22,7 +24,10 @@ void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewBlock();
 void drawBlocks();
+void getBoardInfo();
 void testPrintBoard();
+void testPrintCurrentBlock();
+void testPrintBoardInfo();
 
 int main(int argc, char* argv[]) {
 
@@ -30,10 +35,15 @@ int main(int argc, char* argv[]) {
         exit(3);
     }
 
+
+
     while(1) {
         drawBoard();
         drawBlocks();
         updateScreen();
+        pickNewBlock();
+        //testPrintCurrentBlock();
+        //testPrintBoardInfo();
         keyDetect();
     }
 
@@ -41,8 +51,18 @@ int main(int argc, char* argv[]) {
 }
 
 void keyDetect() {
-    int key = getkey();
-    if (key == SDLK_ESCAPE)
+    int key = pollkey();
+    if (key == SDLK_LEFT) {
+        if (currentpiece_variant == 0)
+            currentpiece_variant = 3;
+        else
+            currentpiece_variant--;
+    } else if (key == SDLK_RIGHT) {
+        if (currentpiece_variant == 3)
+            currentpiece_variant = 0;
+        else
+            currentpiece_variant++;
+    } else if (key == SDLK_ESCAPE)
         exit(1);
 }
 
@@ -67,8 +87,10 @@ int randomInt(int range_start, int range_end) {
 
 void pickNewBlock() {
     if (newblockonscreen == false) {
+        getBoardInfo();
         currentpiece_shape = randomInt(0, 3);
-        currentpiece_shape = 0;
+        currentpiece_variant = 0;
+        newblockonscreen = true;
     }
 }
 
@@ -96,6 +118,20 @@ void drawBlocks() {
     }
 }
 
+void getBoardInfo() {
+    int counter = -1;
+    for (int i = 0; i < COLUMNS; i++) {
+        counter = -1;
+        for (int j = 0; j < ROWS; j++) {
+            if (board[j][i])
+                counter++;
+            else
+                boardinfo[i] = counter;
+                break;
+        }
+    }
+}
+
 void testPrintBoard() {
     printf("=====PRINTBOARD TEST=====");
     for (int i = 0; i < ROWS; i++) {
@@ -105,4 +141,18 @@ void testPrintBoard() {
         }
     }
     printf("=====PRINTBOARD TEST=====");
+}
+
+void testPrintCurrentBlock() {
+    printf("=====CURRENT BLOCK TEST=====\n");
+    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\n",
+            currentpiece_shape, currentpiece_variant);
+    printf("=====CURRENT BLOCK TEST=====\n");
+}
+
+void testPrintBoardInfo() {
+    printf("=====BOARDINFO TEST=====\n");
+    for (int i = 0; i < COLUMNS; i++)
+        printf("%d\t", boardinfo[i]);
+    printf("=====BOARDINFO TEST=====\n");
 }
