@@ -17,7 +17,7 @@ int board[ROWS][COLUMNS],
     distancetodropinfo[4],
     piece_shape,
     piece_variant,
-    pieceposition,
+    piece_position,
     distancetodrop;
 bool newpieceonscreen = false;
 
@@ -44,27 +44,46 @@ int main(int argc, char* argv[]) {
         updateScreen();
         pickNewPiece();
         testPrintCurrentPiece();
-        testPrintBoardInfo();
+        //testPrintBoardInfo();
         keyDetect();
     }
-
-
 
     return 0;
 }
 
 void keyDetect() {
     int key = pollkey();
-    if (key == SDLK_LEFT) {
-        if (piece_variant == 0)
+    if (key == SDLK_UP) {
+        if (piece_variant == 0) {
             piece_variant = 3;
-        else
+            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
+                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
+            }
+        } else {
             piece_variant--;
-    } else if (key == SDLK_RIGHT) {
-        if (piece_variant == 3)
+            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
+                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
+            }
+        }
+    } else if (key == SDLK_DOWN) {
+        if (piece_variant == 3) {
             piece_variant = 0;
-        else
+            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
+                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
+            }
+        } else {
             piece_variant++;
+            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
+                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
+            }
+        }
+    } else if (key == SDLK_LEFT) {
+        if (piece_position) {
+            piece_position--;
+        }
+    } else if (key == SDLK_RIGHT) {
+        if (piece_position + getPieceWidth() < COLUMNS - 1)
+            piece_position++;
     } else if (key == SDLK_ESCAPE)
         exit(1);
 }
@@ -144,9 +163,9 @@ int getPieceWidth() {
             piecewidth = widthcounter;
         widthcounter = -1;
         for (int j = 0; j < 4; j++) {
-            if (pieces[piece_shape][piece_variant][i][j]) {
+            if (pieces[piece_shape][piece_variant][i][j])
                 widthcounter++;
-            } else
+            else
                 break;
         }
     }
@@ -157,17 +176,16 @@ void testPrintBoard() {
     printf("=====PRINTBOARD TEST=====");
     for (int i = 0; i < ROWS; i++) {
         printf("\n");
-        for (int j = 0; j < COLUMNS; j++) {
+        for (int j = 0; j < COLUMNS; j++)
             printf("%d\t", board[i][j]);
-        }
     }
     printf("=====PRINTBOARD TEST=====\n");
 }
 
 void testPrintCurrentPiece() {
     printf("=====CURRENT PIECE TEST=====\n");
-    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\nCurrent piece width: %d\n",
-            piece_shape, piece_variant, getPieceWidth());
+    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\nCurrent piece width: %d\nCurrent piece position: %d\n",
+            piece_shape, piece_variant, getPieceWidth(), piece_position);
     printf("=====CURRENT PIECE TEST=====\n");
 }
 
