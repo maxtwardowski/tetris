@@ -11,22 +11,25 @@
 #define ROWS 20
 #define COLUMNS 10
 
-//the main structures of the game  newblockonscreen
+//the main structures of the game  newpieceonscreen
 int board[ROWS][COLUMNS],
     boardinfo[COLUMNS],
-    currentpiece_shape,
-    currentpiece_variant,
+    distancetodropinfo[4],
+    piece_shape,
+    piece_variant,
+    pieceposition,
     distancetodrop;
-bool newblockonscreen = false;
+bool newpieceonscreen = false;
 
 void keyDetect();
 void drawBoard();
 int randomInt(int range_start, int range_end);
-void pickNewBlock();
+void pickNewPiece();
 void drawBlocks();
 void getBoardInfo();
+int getPieceWidth();
 void testPrintBoard();
-void testPrintCurrentBlock();
+void testPrintCurrentPiece();
 void testPrintBoardInfo();
 
 int main(int argc, char* argv[]) {
@@ -35,17 +38,17 @@ int main(int argc, char* argv[]) {
         exit(3);
     }
 
-
-
     while(1) {
         drawBoard();
         drawBlocks();
         updateScreen();
-        pickNewBlock();
-        //testPrintCurrentBlock();
-        //testPrintBoardInfo();
+        pickNewPiece();
+        testPrintCurrentPiece();
+        testPrintBoardInfo();
         keyDetect();
     }
+
+
 
     return 0;
 }
@@ -53,18 +56,20 @@ int main(int argc, char* argv[]) {
 void keyDetect() {
     int key = pollkey();
     if (key == SDLK_LEFT) {
-        if (currentpiece_variant == 0)
-            currentpiece_variant = 3;
+        if (piece_variant == 0)
+            piece_variant = 3;
         else
-            currentpiece_variant--;
+            piece_variant--;
     } else if (key == SDLK_RIGHT) {
-        if (currentpiece_variant == 3)
-            currentpiece_variant = 0;
+        if (piece_variant == 3)
+            piece_variant = 0;
         else
-            currentpiece_variant++;
+            piece_variant++;
     } else if (key == SDLK_ESCAPE)
         exit(1);
 }
+
+
 
 void drawBoard() {
     const int OFFSET = 10, DISPLACEMENT = 2;
@@ -85,12 +90,12 @@ int randomInt(int range_start, int range_end) {
     return random_int;
 }
 
-void pickNewBlock() {
-    if (newblockonscreen == false) {
+void pickNewPiece() {
+    if (newpieceonscreen == false) {
         getBoardInfo();
-        currentpiece_shape = randomInt(0, 3);
-        currentpiece_variant = 0;
-        newblockonscreen = true;
+        piece_shape = randomInt(0, 3);
+        piece_variant = 0;
+        newpieceonscreen = true;
     }
 }
 
@@ -132,6 +137,22 @@ void getBoardInfo() {
     }
 }
 
+int getPieceWidth() {
+    int piecewidth = -1, widthcounter = -1;
+    for (int i = 0; i < 4; i++) {
+        if (widthcounter > piecewidth)
+            piecewidth = widthcounter;
+        widthcounter = -1;
+        for (int j = 0; j < 4; j++) {
+            if (pieces[piece_shape][piece_variant][i][j]) {
+                widthcounter++;
+            } else
+                break;
+        }
+    }
+    return piecewidth;
+}
+
 void testPrintBoard() {
     printf("=====PRINTBOARD TEST=====");
     for (int i = 0; i < ROWS; i++) {
@@ -140,14 +161,14 @@ void testPrintBoard() {
             printf("%d\t", board[i][j]);
         }
     }
-    printf("=====PRINTBOARD TEST=====");
+    printf("=====PRINTBOARD TEST=====\n");
 }
 
-void testPrintCurrentBlock() {
-    printf("=====CURRENT BLOCK TEST=====\n");
-    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\n",
-            currentpiece_shape, currentpiece_variant);
-    printf("=====CURRENT BLOCK TEST=====\n");
+void testPrintCurrentPiece() {
+    printf("=====CURRENT PIECE TEST=====\n");
+    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\nCurrent piece width: %d\n",
+            piece_shape, piece_variant, getPieceWidth());
+    printf("=====CURRENT PIECE TEST=====\n");
 }
 
 void testPrintBoardInfo() {
