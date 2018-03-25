@@ -13,6 +13,7 @@
 
 //the main structures of the game  newpieceonscreen
 int board[ROWS][COLUMNS],
+    pieceboard[ROWS][COLUMNS],
     boardinfo[COLUMNS],
     distancetodropinfo[4],
     piece_shape,
@@ -20,13 +21,15 @@ int board[ROWS][COLUMNS],
     piece_position,
     piece_color,
     pieceinfo[4],
-    distancetodrop;
+    piece_cords[4][4][2];
 bool newpieceonscreen = false;
 
+void cleanScreen();
 void keyDetect();
 void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewPiece();
+void movePiece();
 void drawBlocks();
 void getBoardInfo();
 int getPieceWidth();
@@ -39,6 +42,7 @@ void testPrintCurrentPiece();
 void testPrintBoardInfo();
 void testPrintPieceInfo();
 void testPrintDistanceToDropInfo();
+void testPrintPieceCords();
 
 int main(int argc, char* argv[]) {
 
@@ -49,18 +53,24 @@ int main(int argc, char* argv[]) {
     while(1) {
         getBoardInfo();
         pickNewPiece();
+        cleanScreen();
         drawBoard();
         drawBlocks();
         updateScreen();
         //testPrintCurrentPiece();
         //testPrintPieceInfo();
         //testPrintDistanceToDropInfo();
-        testPrintBoardInfo();
-        //testPrintBoard();
+        //testPrintBoardInfo();
+        //testPrintPieceCords();
         keyDetect();
     }
 
     return 0;
+}
+
+void cleanScreen() {
+    //Cleans the screen drawing a black background
+	filledRect(0, 0, screenWidth(), screenHeight(), BLACK);
 }
 
 void keyDetect() {
@@ -97,7 +107,9 @@ void keyDetect() {
         if (piece_position + getPieceWidth() < COLUMNS - 1)
             piece_position++;
     } else if (key == SDLK_RETURN) {
-        dropPiece();
+        testPrintBoard();
+        movePiece();
+        testPrintBoard();
     } else if (key == SDLK_ESCAPE)
         exit(1);
     getPieceInfo();
@@ -126,12 +138,32 @@ int randomInt(int range_start, int range_end) {
 
 void pickNewPiece() {
     if (newpieceonscreen == false) {
-        piece_shape = randomInt(0, 3);
+        piece_shape = randomInt(0, 6);
         piece_color = randomInt(1, 7);
         piece_variant = 0;
         getPieceInfo();
         getDistanceToDropInfo();
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (pieces[piece_shape][piece_variant][i][j]) {
+                    pieceboard[ROWS - i - 1][j] = piece_color;
+                }
+            }
+        }
+
         newpieceonscreen = true;
+    }
+}
+
+void movePiece() {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j]) {
+                pieceboard[i - 1][j] = pieceboard[i][j];
+                pieceboard[i][j] = 0;
+            }
+        }
     }
 }
 
@@ -145,12 +177,12 @@ void drawBlocks() {
     for (int i = 0; i < ROWS; i++) {
         x_cord = x_base;
         for (int j = 0; j < COLUMNS; j++) {
-            if (board[i][j]) {
+            if (pieceboard[i][j]) {
                 filledRect(x_cord,
                            y_cord,
                            x_cord + BLOCKWIDTH,
                            y_cord - BLOCKWIDTH,
-                           board[i][j]);
+                           pieceboard[i][j]);
                 x_cord += BLOCKWIDTH;
             }
         }
@@ -229,10 +261,10 @@ void dropPiece() {
 
 void testPrintBoard() {
     printf("=====PRINTBOARD TEST=====");
-    for (int i = 0; i < ROWS; i++) {
+    for (int i = ROWS - 1; i >= 0; i--) {
         printf("\n");
         for (int j = 0; j < COLUMNS; j++)
-            printf("%d\t", board[i][j]);
+            printf("%d\t", pieceboard[i][j]);
     }
     printf("=====PRINTBOARD TEST=====\n");
 }
@@ -264,5 +296,15 @@ void testPrintDistanceToDropInfo() {
         printf("Distance to drop column #%d: %d\n", i, distancetodropinfo[i]);
     }
     printf("\n=====DISTANCETODROP TEST=====\n");
+}
 
+void testPrintPieceCords() {
+    printf("\n=====PIECE CORDS=====\n");
+    for (int i = 0; i < 4; i++) {
+        printf("\n");
+        for (int j = 0; j < 4; j++) {
+            printf("| %d, %d |\t", piece_cords[i][j][0], piece_cords[i][j][1]);
+        }
+    }
+    printf("\n=====PIECE CORDS=====\n");
 }
