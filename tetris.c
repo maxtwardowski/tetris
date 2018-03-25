@@ -62,13 +62,14 @@ int main(int argc, char* argv[]) {
         cleanScreen();
         drawBoard();
         drawBlocks();
-        updateScreen();
+
         //testPrintCurrentPiece();
         //testPrintPieceInfo();
         //testPrintDistanceToDropInfo();
         //testPrintBoardInfo();
         //testPrintPieceCords();
         keyDetect();
+        updateScreen();
     }
 
     return 0;
@@ -109,7 +110,6 @@ void keyDetect() {
         if (piece_position) {
             piece_position--;
             movePieceLeft();
-
         }
     } else if (key == SDLK_RIGHT) {
         if (piece_position + getPieceWidth() < COLUMNS - 1) {
@@ -119,7 +119,6 @@ void keyDetect() {
             testPrintBoard();
         }
     } else if (key == SDLK_RETURN) {
-        //printf("\n%d\n", get);
         movePieceDown();
     } else if (key == SDLK_ESCAPE)
         exit(1);
@@ -165,9 +164,8 @@ void pickNewPiece() {
     }
 }
 
-int checkCollision(void)
-{
-    int i, j; /* counters */
+int checkCollision(void) {
+    int i, j;
     for (i = ROWS - 1; i >= 0; i--)
         for (j = COLUMNS - 1; j >= 0; j--)
             if (pieceboard[i][j])
@@ -188,10 +186,10 @@ void movePieceDown() {
 }
 
 void movePieceLeft() {
-    for (int i = COLUMNS - 1; i >= 0; i--) {
+    for (int i = 0; i < COLUMNS; i++) {
         for (int j = 0; j < ROWS; j++) {
             if (pieceboard[j][i]) {
-                pieceboard[j][i + 1] = pieceboard[j][i];
+                pieceboard[j][i - 1] = pieceboard[j][i];
                 pieceboard[j][i] = 0;
             }
         }
@@ -347,15 +345,4 @@ void testPrintDistanceToDropInfo() {
         printf("Distance to drop column #%d: %d\n", i, distancetodropinfo[i]);
     }
     printf("\n=====DISTANCETODROP TEST=====\n");
-}
-
-void testPrintPieceCords() {
-    printf("\n=====PIECE CORDS=====\n");
-    for (int i = 0; i < 4; i++) {
-        printf("\n");
-        for (int j = 0; j < 4; j++) {
-            printf("| %d, %d |\t", piece_cords[i][j][0], piece_cords[i][j][1]);
-        }
-    }
-    printf("\n=====PIECE CORDS=====\n");
 }
