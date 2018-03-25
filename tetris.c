@@ -29,13 +29,17 @@ void keyDetect();
 void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewPiece();
-void movePiece();
+int checkCollision(void);
+void movePieceDown();
+void movePieceLeft();
+void movePieceRight();
 void drawBlocks();
 void getBoardInfo();
 int getPieceWidth();
 void getPieceInfo();
 void getDistanceToDropInfo();
 int getShortestDistanceToDrop();
+int getShortestDistanceToDropIndex();
 void dropPiece();
 void testPrintBoard();
 void testPrintCurrentPiece();
@@ -51,6 +55,8 @@ int main(int argc, char* argv[]) {
     }
 
     while(1) {
+
+
         getBoardInfo();
         pickNewPiece();
         cleanScreen();
@@ -102,20 +108,23 @@ void keyDetect() {
     } else if (key == SDLK_LEFT) {
         if (piece_position) {
             piece_position--;
+            movePieceLeft();
+
         }
     } else if (key == SDLK_RIGHT) {
-        if (piece_position + getPieceWidth() < COLUMNS - 1)
+        if (piece_position + getPieceWidth() < COLUMNS - 1) {
             piece_position++;
+            testPrintBoard();
+            movePieceRight();
+            testPrintBoard();
+        }
     } else if (key == SDLK_RETURN) {
-        testPrintBoard();
-        movePiece();
-        testPrintBoard();
+        //printf("\n%d\n", get);
+        movePieceDown();
     } else if (key == SDLK_ESCAPE)
         exit(1);
     getPieceInfo();
 }
-
-
 
 void drawBoard() {
     const int OFFSET = 10, DISPLACEMENT = 2;
@@ -156,12 +165,45 @@ void pickNewPiece() {
     }
 }
 
-void movePiece() {
+int checkCollision(void)
+{
+    int i, j; /* counters */
+    for (i = ROWS - 1; i >= 0; i--)
+        for (j = COLUMNS - 1; j >= 0; j--)
+            if (pieceboard[i][j])
+                if (board[i - 1][j])
+                    return 1;
+    return 0;
+}
+
+void movePieceDown() {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (pieceboard[i][j]) {
                 pieceboard[i - 1][j] = pieceboard[i][j];
                 pieceboard[i][j] = 0;
+            }
+        }
+    }
+}
+
+void movePieceLeft() {
+    for (int i = COLUMNS - 1; i >= 0; i--) {
+        for (int j = 0; j < ROWS; j++) {
+            if (pieceboard[j][i]) {
+                pieceboard[j][i + 1] = pieceboard[j][i];
+                pieceboard[j][i] = 0;
+            }
+        }
+    }
+}
+
+void movePieceRight() {
+    for (int i = COLUMNS - 1; i >= 0; i--) {
+        for (int j = ROWS - 1; j >= 0; j--) {
+            if (pieceboard[j][i]) {
+                pieceboard[j][i + 1] = pieceboard[j][i];
+                pieceboard[j][i] = 0;
             }
         }
     }
@@ -244,6 +286,15 @@ int getShortestDistanceToDrop() {
             shortestdistance = distancetodropinfo[i];
     }
     return shortestdistance;
+}
+
+int getShortestDistanceToDropIndex() {
+    int shortestdistance = 100000, shortestindex;
+    for (int i = 0; i < 4; i++) {
+        if (shortestdistance > distancetodropinfo[i])
+            shortestindex = i;
+    }
+    return shortestindex;
 }
 
 void dropPiece() {
