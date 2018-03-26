@@ -11,19 +11,19 @@
 #define ROWS 20
 #define COLUMNS 10
 
+#define UP 1
+#define DOWN 2
+#define LEFT 3
+#define RIGHT 4
+
 //the main structures of the game  newpieceonscreen
 int board[ROWS][COLUMNS],
     pieceboard[ROWS][COLUMNS],
     boardinfo[COLUMNS],
-    distancetodropinfo[4],
     piece_shape,
     piece_variant,
     piece_position,
-    piece_color,
-    pieceinfo[4],
-    piece_cords[4][4][2],
-    collision_x,
-    collision_y;
+    piece_color;
 bool newpieceonscreen = false;
 
 void cleanScreen();
@@ -31,23 +31,9 @@ void keyDetect();
 void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewPiece();
-void movePieceDown();
-void movePieceLeft();
-void movePieceRight();
+void movePiece(int direction);
 void drawBlocks();
-void getBoardInfo();
 int getPieceWidth();
-void getPieceInfo();
-void getDistanceToDropInfo();
-int getShortestDistanceToDrop();
-int getShortestDistanceToDropIndex();
-void getCollisionCords();
-void testPrintBoard();
-void testPrintCurrentPiece();
-void testPrintBoardInfo();
-void testPrintPieceInfo();
-void testPrintDistanceToDropInfo();
-void testPrintPieceCords();
 
 int main(int argc, char* argv[]) {
 
@@ -56,19 +42,10 @@ int main(int argc, char* argv[]) {
     }
 
     while(1) {
-        getDistanceToDropInfo();
-        getBoardInfo();
-        getPieceInfo();
         pickNewPiece();
         cleanScreen();
         drawBoard();
         drawBlocks();
-        //printf("%d\n", getShortestDistanceToDropIndex());
-        //testPrintCurrentPiece();
-        //testPrintPieceInfo();
-        testPrintDistanceToDropInfo();
-        //testPrintBoardInfo();
-        //testPrintPieceCords();
         keyDetect();
         updateScreen();
     }
@@ -110,21 +87,17 @@ void keyDetect() {
     } else if (key == SDLK_LEFT) {
         if (piece_position) {
             piece_position--;
-            movePieceLeft();
+            movePiece(LEFT);
         }
     } else if (key == SDLK_RIGHT) {
         if (piece_position + getPieceWidth() < COLUMNS - 1) {
             piece_position++;
-            movePieceRight();
-            testPrintBoard();
+            movePiece(RIGHT);
         }
     } else if (key == SDLK_RETURN) {
-        movePieceDown();
-        testPrintBoard();
+        movePiece(DOWN);
     } else if (key == SDLK_ESCAPE)
         exit(1);
-    getPieceInfo();
-    getShortestDistanceToDropIndex();
 }
 
 void drawBoard() {
@@ -151,8 +124,6 @@ void pickNewPiece() {
         piece_shape = randomInt(0, 6);
         piece_color = randomInt(1, 7);
         piece_variant = 0;
-        getPieceInfo();
-        getDistanceToDropInfo();
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -165,34 +136,32 @@ void pickNewPiece() {
     }
 }
 
-void movePieceDown() {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j]) {
-                pieceboard[i - 1][j] = pieceboard[i][j];
-                pieceboard[i][j] = 0;
+void movePiece(int direction) {
+    if (direction == DOWN) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMNS; j++) {
+                if (pieceboard[i][j]) {
+                    pieceboard[i - 1][j] = pieceboard[i][j];
+                    pieceboard[i][j] = 0;
+                }
             }
         }
-    }
-}
-
-void movePieceLeft() {
-    for (int i = 0; i < COLUMNS; i++) {
-        for (int j = 0; j < ROWS; j++) {
-            if (pieceboard[j][i]) {
-                pieceboard[j][i - 1] = pieceboard[j][i];
-                pieceboard[j][i] = 0;
+    } else if (direction == LEFT) {
+        for (int i = 0; i < COLUMNS; i++) {
+            for (int j = 0; j < ROWS; j++) {
+                if (pieceboard[j][i]) {
+                    pieceboard[j][i - 1] = pieceboard[j][i];
+                    pieceboard[j][i] = 0;
+                }
             }
         }
-    }
-}
-
-void movePieceRight() {
-    for (int i = COLUMNS - 1; i >= 0; i--) {
-        for (int j = ROWS - 1; j >= 0; j--) {
-            if (pieceboard[j][i]) {
-                pieceboard[j][i + 1] = pieceboard[j][i];
-                pieceboard[j][i] = 0;
+    } else if (direction == RIGHT) {
+        for (int i = COLUMNS - 1; i >= 0; i--) {
+            for (int j = ROWS - 1; j >= 0; j--) {
+                if (pieceboard[j][i]) {
+                    pieceboard[j][i + 1] = pieceboard[j][i];
+                    pieceboard[j][i] = 0;
+                }
             }
         }
     }
@@ -221,19 +190,6 @@ void drawBlocks() {
     }
 }
 
-void getBoardInfo() {
-    int counter = -1;
-    for (int i = 0; i < COLUMNS; i++) {
-        counter = -1;
-        for (int j = 0; j < ROWS; j++) {
-            if (board[j][i])
-                counter = j;
-        }
-        boardinfo[i] = counter;
-    }
-
-}
-
 int getPieceWidth() {
     int piecewidth = -1, widthcounter = -1;
     for (int i = 0; i < 4; i++) {
@@ -248,93 +204,4 @@ int getPieceWidth() {
         }
     }
     return piecewidth;
-}
-
-void getPieceInfo() {
-    int pieceheight = -1;
-    for (int i = 0; i < 4; i++) {
-        pieceheight = -1;
-        for (int j = 0; j < 4; j++) {
-            if (pieces[piece_shape][piece_variant][j][i])
-                pieceheight = j;
-        }
-        pieceinfo[i] = pieceheight;
-    }
-}
-
-void getDistanceToDropInfo() {
-    for (int i = 0; i < 4; i++) {
-        distancetodropinfo[i] = ROWS - 2 - pieceinfo[piece_position + i];
-    }
-}
-
-int getShortestDistanceToDrop() {
-    int shortestdistance = 100000;
-    for (int i = 0; i < 4; i ++) {
-        if (shortestdistance > distancetodropinfo[i])
-            shortestdistance = distancetodropinfo[i];
-    }
-    return shortestdistance;
-
-
-}
-
-int getShortestDistanceToDropIndex() {
-    int shortestdistance = 100000, shortestindex;
-    for (int i = 0; i < 4; i++) {
-        if (shortestdistance > distancetodropinfo[i]) {
-            shortestdistance = distancetodropinfo[i];
-            shortestindex = i;
-        }
-    }
-    return shortestindex;
-
-    /*/for (int i = 0; i < ROWS; i++) {
-        if (pieceboard[i][shortestdistance])
-            collision_y = i;
-    }*/
-}
-
-
-void getCollisionCords() {
-
-}
-
-void testPrintBoard() {
-    printf("=====PRINTBOARD TEST=====");
-    for (int i = ROWS - 1; i >= 0; i--) {
-        printf("\n");
-        for (int j = 0; j < COLUMNS; j++)
-            printf("%d\t", pieceboard[i][j]);
-    }
-    printf("=====PRINTBOARD TEST=====\n");
-}
-
-void testPrintCurrentPiece() {
-    printf("=====CURRENT PIECE TEST=====\n");
-    printf("Current piece shape: %d\nCurrent piece variant (rotation): %d\nCurrent piece width: %d\nCurrent piece position: %d\n",
-            piece_shape, piece_variant, getPieceWidth(), piece_position);
-    printf("=====CURRENT PIECE TEST=====\n");
-}
-
-void testPrintBoardInfo() {
-    printf("=====BOARDINFO TEST=====\n");
-    for (int i = 0; i < COLUMNS; i++)
-        printf("%d\t", boardinfo[i]);
-    printf("=====BOARDINFO TEST=====\n");
-}
-
-void testPrintPieceInfo() {
-    printf("=====PIECEINFO TEST=====\n");
-    for (int i = 0; i < 4; i++)
-        printf("%d\t", pieceinfo[i]);
-    printf("\n=====PIECEINFO TEST=====\n");
-}
-
-void testPrintDistanceToDropInfo() {
-    printf("=====DISTANCETODROP TEST=====\n");
-    for (int i = 0; i < 4; i++) {
-        printf("Distance to drop column #%d: %d\n", i, distancetodropinfo[i]);
-    }
-    printf("\n=====DISTANCETODROP TEST=====\n");
 }
