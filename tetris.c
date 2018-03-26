@@ -11,10 +11,9 @@
 #define ROWS 20
 #define COLUMNS 10
 
-#define UP 1
-#define DOWN 2
-#define LEFT 3
-#define RIGHT 4
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
 
 //the main structures of the game  newpieceonscreen
 int board[ROWS][COLUMNS],
@@ -32,8 +31,9 @@ void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewPiece();
 void movePiece(int direction);
-void drawBlocks();
+void drawBlocks(int array[ROWS][COLUMNS]);
 int getPieceWidth();
+void embedBlock();
 
 int main(int argc, char* argv[]) {
 
@@ -41,13 +41,22 @@ int main(int argc, char* argv[]) {
         exit(3);
     }
 
+    int gameregulator = 0;
+
     while(1) {
         pickNewPiece();
         cleanScreen();
         drawBoard();
-        drawBlocks();
+        drawBlocks(board);
+        drawBlocks(pieceboard);
         keyDetect();
         updateScreen();
+
+        if (gameregulator == 1600) {
+            movePiece(DOWN);
+            gameregulator = 0;
+        }
+        gameregulator++;
     }
 
     return 0;
@@ -124,7 +133,7 @@ void pickNewPiece() {
         piece_shape = randomInt(0, 6);
         piece_color = randomInt(1, 7);
         piece_variant = 0;
-
+        piece_position = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pieces[piece_shape][piece_variant][i][j]) {
@@ -141,8 +150,15 @@ void movePiece(int direction) {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLUMNS; j++) {
                 if (pieceboard[i][j]) {
-                    pieceboard[i - 1][j] = pieceboard[i][j];
-                    pieceboard[i][j] = 0;
+                    if (board[i - 1][j] || board[i][j + 1] || board[i][j - 1] || i == 0) {
+                        i = ROWS + 1;
+                        j = COLUMNS + 1;
+                        embedBlock();
+                        newpieceonscreen = false;
+                    } else {
+                        pieceboard[i - 1][j] = pieceboard[i][j];
+                        pieceboard[i][j] = 0;
+                    }
                 }
             }
         }
@@ -167,7 +183,7 @@ void movePiece(int direction) {
     }
 }
 
-void drawBlocks() {
+void drawBlocks(int array[ROWS][COLUMNS]) {
     const int OFFSET = 10, BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS;
     int x_base = (screenWidth() - BLOCKWIDTH * COLUMNS) / 2,
         y_base = screenHeight() - OFFSET,
@@ -177,12 +193,12 @@ void drawBlocks() {
     for (int i = 0; i < ROWS; i++) {
         x_cord = x_base;
         for (int j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j]) {
+            if (array[i][j]) {
                 filledRect(x_cord,
                            y_cord,
                            x_cord + BLOCKWIDTH,
                            y_cord - BLOCKWIDTH,
-                           pieceboard[i][j]);
+                           array[i][j]);
             }
             x_cord += BLOCKWIDTH;
         }
@@ -204,4 +220,15 @@ int getPieceWidth() {
         }
     }
     return piecewidth;
+}
+
+void embedBlock() {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j]) {
+                board[i][j] = pieceboard[i][j];
+                pieceboard[i][j] = 0;
+            }
+        }
+    }
 }
