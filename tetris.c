@@ -39,12 +39,15 @@ int getPieceWidth();
 void embedBlock();
 void checkWin();
 void fallingPieces();
+void dropThePiece();
 
 int main(int argc, char* argv[]) {
 
     if(initGraph()) {
         exit(3);
     }
+
+    srand(time(NULL));
 
     while(true) {
         pickNewPiece();
@@ -103,7 +106,7 @@ void keyDetect() {
             movePiece(RIGHT);
         }
     } else if (key == SDLK_RETURN) {
-        movePiece(DOWN);
+        dropThePiece();
     } else if (key == SDLK_ESCAPE)
         exit(1);
 }
@@ -122,7 +125,6 @@ void drawBoard() {
 }
 
 int randomInt(int range_start, int range_end) {
-    srand(time(NULL));
     int random_int = rand() % (range_end - range_start + 1) + range_start; //+1 to avoid black
     return random_int;
 }
@@ -151,16 +153,6 @@ void movePiece(int direction) {
             for (int j = 0; j < COLUMNS; j++) {
                 if ((pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0)) {
                     piece_collision = true;
-
-                    /*if (board[i - 1][j] || board[i][j + 1] || i == 0) {
-                        i = ROWS + 1;
-                        j = COLUMNS + 1;
-                        embedBlock();
-                        newpieceonscreen = false;
-                    } else {
-                        pieceboard[i - 1][j] = pieceboard[i][j];
-                        pieceboard[i][j] = 0;
-                    }*/
                 }
             }
         }
@@ -263,4 +255,10 @@ void fallingPieces() {
         gameregulator = 0;
     }
     gameregulator++;
+}
+
+void dropThePiece() {
+    while (piece_collision == false) {
+        movePiece(DOWN);
+    }
 }
