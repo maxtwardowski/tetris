@@ -23,7 +23,8 @@ int board[ROWS][COLUMNS],
     piece_variant,
     piece_position,
     piece_color;
-bool newpieceonscreen = false;
+bool newpieceonscreen = false,
+     piece_collision = false;
 
 void cleanScreen();
 void keyDetect();
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
 
     int gameregulator = 0;
 
-    while(1) {
+    while(true) {
         pickNewPiece();
         cleanScreen();
         drawBoard();
@@ -134,6 +135,7 @@ void pickNewPiece() {
         piece_color = randomInt(1, 7);
         piece_variant = 0;
         piece_position = 0;
+        piece_collision = false;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pieces[piece_shape][piece_variant][i][j]) {
@@ -149,8 +151,10 @@ void movePiece(int direction) {
     if (direction == DOWN) {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLUMNS; j++) {
-                if (pieceboard[i][j]) {
-                    if (board[i - 1][j] || board[i][j + 1] || board[i][j - 1] || i == 0) {
+                if ((pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0)) {
+                    piece_collision = true;
+
+                    /*if (board[i - 1][j] || board[i][j + 1] || i == 0) {
                         i = ROWS + 1;
                         j = COLUMNS + 1;
                         embedBlock();
@@ -158,9 +162,20 @@ void movePiece(int direction) {
                     } else {
                         pieceboard[i - 1][j] = pieceboard[i][j];
                         pieceboard[i][j] = 0;
-                    }
+                    }*/
                 }
             }
+        }
+        if (piece_collision == false) {
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLUMNS; j++) {
+                    pieceboard[i - 1][j] = pieceboard[i][j];
+                    pieceboard[i][j] = 0;
+                }
+            }
+        } else if (piece_collision == true) {
+            embedBlock();
+            newpieceonscreen = false;
         }
     } else if (direction == LEFT) {
         for (int i = 0; i < COLUMNS; i++) {
