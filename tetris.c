@@ -10,6 +10,7 @@
 
 #define ROWS 20
 #define COLUMNS 10
+#define THRESHOLD 1600
 
 #define DOWN 1
 #define LEFT 2
@@ -22,7 +23,8 @@ int board[ROWS][COLUMNS],
     piece_shape,
     piece_variant,
     piece_position,
-    piece_color;
+    piece_color,
+    gameregulator;
 bool newpieceonscreen = false,
      piece_collision = false;
 
@@ -36,14 +38,13 @@ void drawBlocks(int array[ROWS][COLUMNS]);
 int getPieceWidth();
 void embedBlock();
 void checkWin();
+void fallingPieces();
 
 int main(int argc, char* argv[]) {
 
     if(initGraph()) {
         exit(3);
     }
-
-    int gameregulator = 0;
 
     while(true) {
         pickNewPiece();
@@ -54,11 +55,7 @@ int main(int argc, char* argv[]) {
         keyDetect();
         updateScreen();
         checkWin();
-        if (gameregulator == 1600) {
-            movePiece(DOWN);
-            gameregulator = 0;
-        }
-        gameregulator++;
+        fallingPieces();
     }
 
     return 0;
@@ -258,4 +255,12 @@ void checkWin() {
             exit(1);
         }
     }
+}
+
+void fallingPieces() {
+    if (gameregulator == THRESHOLD) {
+        movePiece(DOWN);
+        gameregulator = 0;
+    }
+    gameregulator++;
 }
