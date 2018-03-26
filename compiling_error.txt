@@ -1,0 +1,31 @@
+/tmp/ccVS4yuk.o: In function `main':
+tetris.c:(.text+0x15): undefined reference to `initGraph'
+tetris.c:(.text+0x69): undefined reference to `updateScreen'
+/tmp/ccVS4yuk.o: In function `cleanScreen':
+tetris.c:(.text+0x7e): undefined reference to `screenHeight'
+tetris.c:(.text+0x8a): undefined reference to `screenWidth'
+tetris.c:(.text+0xa3): undefined reference to `filledRect'
+/tmp/ccVS4yuk.o: In function `keyDetect':
+tetris.c:(.text+0xbd): undefined reference to `pollkey'
+/tmp/ccVS4yuk.o: In function `drawBoard':
+tetris.c:(.text+0x384): undefined reference to `screenHeight'
+tetris.c:(.text+0x3bb): undefined reference to `screenWidth'
+tetris.c:(.text+0x3e6): undefined reference to `screenWidth'
+tetris.c:(.text+0x40c): undefined reference to `line'
+tetris.c:(.text+0x425): undefined reference to `line'
+tetris.c:(.text+0x43e): undefined reference to `line'
+tetris.c:(.text+0x457): undefined reference to `line'
+/tmp/ccVS4yuk.o: In function `pickNewPiece':
+tetris.c:(.text+0x54b): undefined reference to `pieces'
+/tmp/ccVS4yuk.o: In function `drawBlocks':
+tetris.c:(.text+0x82e): undefined reference to `screenHeight'
+tetris.c:(.text+0x85b): undefined reference to `screenWidth'
+tetris.c:(.text+0x883): undefined reference to `screenHeight'
+tetris.c:(.text+0x919): undefined reference to `filledRect'
+/tmp/ccVS4yuk.o: In function `getPieceWidth':
+tetris.c:(.text+0xa29): undefined reference to `pieces'
+/tmp/ccVS4yuk.o: In function `getPieceInfo':
+tetris.c:(.text+0xaaa): undefined reference to `pieces'
+/tmp/ccVS4yuk.o: In function `dropPiece':
+tetris.c:(.text+0xc03): undefined reference to `pieces'
+collect2: error: ld returned 1 exit status

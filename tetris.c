@@ -31,7 +31,6 @@ void keyDetect();
 void drawBoard();
 int randomInt(int range_start, int range_end);
 void pickNewPiece();
-int checkCollision(void);
 void movePieceDown();
 void movePieceLeft();
 void movePieceRight();
@@ -41,8 +40,7 @@ int getPieceWidth();
 void getPieceInfo();
 void getDistanceToDropInfo();
 int getShortestDistanceToDrop();
-void getShortestDistanceToDropIndex();
-void dropPiece();
+int getShortestDistanceToDropIndex();
 void getCollisionCords();
 void testPrintBoard();
 void testPrintCurrentPiece();
@@ -58,15 +56,17 @@ int main(int argc, char* argv[]) {
     }
 
     while(1) {
-
+        getDistanceToDropInfo();
         getBoardInfo();
+        getPieceInfo();
         pickNewPiece();
         cleanScreen();
         drawBoard();
         drawBlocks();
+        //printf("%d\n", getShortestDistanceToDropIndex());
         //testPrintCurrentPiece();
         //testPrintPieceInfo();
-        //testPrintDistanceToDropInfo();
+        testPrintDistanceToDropInfo();
         //testPrintBoardInfo();
         //testPrintPieceCords();
         keyDetect();
@@ -117,15 +117,10 @@ void keyDetect() {
             piece_position++;
             movePieceRight();
             testPrintBoard();
-            getDistanceToDropInfo();
-            printf("\nCORDSY: %d, %d\n", collision_x, collision_y);
-
         }
     } else if (key == SDLK_RETURN) {
         movePieceDown();
         testPrintBoard();
-        printf("\nCORDSY: %d, %d\n", collision_x, collision_y);
-
     } else if (key == SDLK_ESCAPE)
         exit(1);
     getPieceInfo();
@@ -166,19 +161,8 @@ void pickNewPiece() {
                 }
             }
         }
-
         newpieceonscreen = true;
     }
-}
-
-int checkCollision(void) {
-    int i, j;
-    for (i = ROWS - 1; i >= 0; i--)
-        for (j = COLUMNS - 1; j >= 0; j--)
-            if (pieceboard[i][j])
-                if (board[i - 1][j])
-                    return 1;
-    return 0;
 }
 
 void movePieceDown() {
@@ -295,7 +279,7 @@ int getShortestDistanceToDrop() {
 
 }
 
-void getShortestDistanceToDropIndex() {
+int getShortestDistanceToDropIndex() {
     int shortestdistance = 100000, shortestindex;
     for (int i = 0; i < 4; i++) {
         if (shortestdistance > distancetodropinfo[i]) {
@@ -303,7 +287,7 @@ void getShortestDistanceToDropIndex() {
             shortestindex = i;
         }
     }
-    collision_x = shortestindex + piece_position;
+    return shortestindex;
 
     /*/for (int i = 0; i < ROWS; i++) {
         if (pieceboard[i][shortestdistance])
@@ -311,18 +295,6 @@ void getShortestDistanceToDropIndex() {
     }*/
 }
 
-void dropPiece() {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (pieces[piece_shape][piece_variant][i][j]) {
-                board[boardinfo[piece_position + j] + i + 1][piece_position + j] = piece_color;
-            }
-        }
-    }
-
-
-    newpieceonscreen = false;
-}
 
 void getCollisionCords() {
 
