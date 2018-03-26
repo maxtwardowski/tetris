@@ -56,7 +56,6 @@ int main(int argc, char* argv[]) {
 
     while(1) {
 
-
         getBoardInfo();
         pickNewPiece();
         cleanScreen();
@@ -223,8 +222,8 @@ void drawBlocks() {
                            x_cord + BLOCKWIDTH,
                            y_cord - BLOCKWIDTH,
                            pieceboard[i][j]);
-                x_cord += BLOCKWIDTH;
             }
+            x_cord += BLOCKWIDTH;
         }
         y_cord -= BLOCKWIDTH;
     }
