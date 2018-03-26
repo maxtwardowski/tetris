@@ -35,6 +35,7 @@ void movePiece(int direction);
 void drawBlocks(int array[ROWS][COLUMNS]);
 int getPieceWidth();
 void embedBlock();
+void checkWin();
 
 int main(int argc, char* argv[]) {
 
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
         drawBlocks(pieceboard);
         keyDetect();
         updateScreen();
-
+        checkWin();
         if (gameregulator == 1600) {
             movePiece(DOWN);
             gameregulator = 0;
@@ -244,6 +245,17 @@ void embedBlock() {
                 board[i][j] = pieceboard[i][j];
                 pieceboard[i][j] = 0;
             }
+        }
+    }
+}
+
+void checkWin() {
+    for (int i = 0; i < COLUMNS; i++) {
+        if (board[ROWS - 1][i] != 0) {
+            textout(200, 200, "GAME OVER! TRY AGAIN.", RED);
+            updateScreen();
+            SDL_Delay(2000);
+            exit(1);
         }
     }
 }
