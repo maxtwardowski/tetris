@@ -49,6 +49,7 @@ void dropThePiece();
 void checkCleanRow();
 void CleanRow(int height);
 void checkHorizontalCollision();
+void rotatePiece();
 
 int main(int argc, char* argv[]) {
 
@@ -94,6 +95,7 @@ void keyDetect() {
                 piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
             }
         }
+        rotatePiece();
     } else if (key == SDLK_DOWN) {
         if (piece_variant == 3) {
             piece_variant = 0;
@@ -106,6 +108,7 @@ void keyDetect() {
                 piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
             }
         }
+        rotatePiece();
     } else if (key == SDLK_LEFT) {
         if (piece_position) {
             piece_position--;
@@ -327,4 +330,33 @@ void checkHorizontalCollision() {
                 piece_collision_right = false;
         }
     }
+}
+
+void rotatePiece() {
+    int i, j;
+    for (i = ROWS - 1; i >= 0; i--) {
+        for (j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j])
+                break;
+        }
+    }
+
+    //cleaning the pieceboard for the rotated piece
+    for (int k = 0; k < ROWS; k++) {
+        for (int l = 0; l < COLUMNS; j++) {
+            pieceboard[k][l] = 0;
+        }
+    }
+
+    for (int k = 0; k < 4; k++) {
+        for (int l = 0; l < 4; l++) {
+            if (pieces[piece_shape][piece_variant][k][l]) {
+                pieceboard[i - k][j + l] = piece_color;
+            }
+        }
+    }
+}
+
+void animateDrop() {
+
 }
