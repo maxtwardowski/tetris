@@ -14,13 +14,13 @@
 
 #define ROWS 20
 #define COLUMNS 10
-#define THRESHOLD 1600
+#define THRESHOLD 300
 
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
 
-//the main structures of the game  newpieceonscreen
+//the main structures of the game
 int board[ROWS][COLUMNS],
     pieceboard[ROWS][COLUMNS],
     boardinfo[COLUMNS],
@@ -30,7 +30,9 @@ int board[ROWS][COLUMNS],
     piece_color,
     gameregulator;
 bool newpieceonscreen = false,
-     piece_collision = false;
+     piece_collision = false,
+     piece_collision_left = false,
+     piece_collision_right = false;
 
 void cleanScreen();
 void keyDetect();
@@ -46,6 +48,7 @@ void fallingPieces();
 void dropThePiece();
 void checkCleanRow();
 void CleanRow(int height);
+void checkHorizontalCollision();
 
 int main(int argc, char* argv[]) {
 
@@ -56,6 +59,7 @@ int main(int argc, char* argv[]) {
     srand(time(NULL));
 
     while(true) {
+        checkHorizontalCollision();
         pickNewPiece();
         cleanScreen();
         drawBoard();
@@ -137,16 +141,19 @@ int randomInt(int range_start, int range_end) {
 }
 
 void pickNewPiece() {
+    int const spawning_position = 4;
     if (newpieceonscreen == false) {
         piece_shape = randomInt(0, 6);
         piece_color = randomInt(1, 7);
         piece_variant = 0;
-        piece_position = 0;
+        piece_position = spawning_position;
         piece_collision = false;
+        piece_collision_left = false;
+        piece_collision_right = false;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pieces[piece_shape][piece_variant][i][j]) {
-                    pieceboard[ROWS - i - 1][j] = piece_color;
+                    pieceboard[ROWS - i - 1][j + spawning_position] = piece_color;
                 }
             }
         }
@@ -174,16 +181,16 @@ void movePiece(int direction) {
             embedBlock();
             newpieceonscreen = false;
         }
-    } else if (direction == LEFT) {
-        for (int i = 0; i < COLUMNS; i++) {
-            for (int j = 0; j < ROWS; j++) {
-                if (pieceboard[j][i]) {
-                    pieceboard[j][i - 1] = pieceboard[j][i];
-                    pieceboard[j][i] = 0;
+    } else if (direction == LEFT && !piece_collision_left) {
+            for (int i = 0; i < COLUMNS; i++) {
+                for (int j = 0; j < ROWS; j++) {
+                    if (pieceboard[j][i]) {
+                        pieceboard[j][i - 1] = pieceboard[j][i];
+                        pieceboard[j][i] = 0;
+                    }
                 }
             }
-        }
-    } else if (direction == RIGHT) {
+    } else if (direction == RIGHT && !piece_collision_right) {
         for (int i = COLUMNS - 1; i >= 0; i--) {
             for (int j = ROWS - 1; j >= 0; j--) {
                 if (pieceboard[j][i]) {
@@ -292,6 +299,32 @@ void CleanRow(int height) {
     for (int i = height; i < ROWS - 1; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             board[i][j] = board[i + 1][j];
+        }
+    }
+}
+
+void checkHorizontalCollision() {
+    //checking left side
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j] && j && board[i][j - 1]) {
+                piece_collision_left = true;
+                i = ROWS;
+                j = COLUMNS;
+            } else if (pieceboard[i][j] && j && !board[i][j - 1])
+                piece_collision_left = false;
+
+        }
+    }
+    //checking right side
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = COLUMNS - 1; j >= 0; j--) {
+            if (pieceboard[i][j] && j < COLUMNS && board[i][j + 1]) {
+                piece_collision_right = true;
+                i = ROWS;
+                j = -1;
+            } else if (pieceboard[i][j] && j < COLUMNS && !board[i][j + 1])
+                piece_collision_right = false;
         }
     }
 }
