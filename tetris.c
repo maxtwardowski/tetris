@@ -10,7 +10,7 @@
 
 #define ROWS 20
 #define COLUMNS 10
-#define THRESHOLD 1600
+#define THRESHOLD 300
 
 #define DOWN 1
 #define LEFT 2
@@ -37,9 +37,11 @@ void movePiece(int direction);
 void drawBlocks(int array[ROWS][COLUMNS]);
 int getPieceWidth();
 void embedBlock();
-void checkWin();
+void checkGameOver();
 void fallingPieces();
 void dropThePiece();
+void checkCleanRow();
+void CleanRow(int height);
 
 int main(int argc, char* argv[]) {
 
@@ -57,7 +59,8 @@ int main(int argc, char* argv[]) {
         drawBlocks(pieceboard);
         keyDetect();
         updateScreen();
-        checkWin();
+        checkCleanRow();
+        checkGameOver();
         fallingPieces();
     }
 
@@ -238,7 +241,7 @@ void embedBlock() {
     }
 }
 
-void checkWin() {
+void checkGameOver() {
     for (int i = 0; i < COLUMNS; i++) {
         if (board[ROWS - 1][i] != 0) {
             textout(200, 200, "GAME OVER! TRY AGAIN.", RED);
@@ -260,5 +263,29 @@ void fallingPieces() {
 void dropThePiece() {
     while (piece_collision == false) {
         movePiece(DOWN);
+    }
+}
+
+void checkCleanRow() {
+    int color;
+    for (int i = 0; i < ROWS; i++) {
+        color = board[i][0];
+        for (int j = 0; j < COLUMNS; j++) {
+            if (board[i][j] != color)
+                break;
+            if (j == COLUMNS - 1 && board[i][j] == color && color != BLACK) {
+                updateScreen();
+                SDL_Delay(900);
+                CleanRow(i);
+            }
+        }
+    }
+}
+
+void CleanRow(int height) {
+    for (int i = height; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            board[i - 1][j] = board[i][j];
+        }
     }
 }
