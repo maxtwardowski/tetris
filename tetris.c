@@ -333,17 +333,22 @@ void checkHorizontalCollision() {
 }
 
 void rotatePiece() {
-    int i, j;
-    for (i = ROWS - 1; i >= 0; i--) {
-        for (j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j])
-                break;
+    int ycord, xcord;
+    for (int i = ROWS - 1; i >= 0; i--) {
+        for (int j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j]) {
+                ycord = i;
+                xcord = j;
+                i = -1;
+                j = COLUMNS;
+            }
+
         }
     }
 
     //cleaning the pieceboard for the rotated piece
     for (int k = 0; k < ROWS; k++) {
-        for (int l = 0; l < COLUMNS; j++) {
+        for (int l = 0; l < COLUMNS; l++) {
             pieceboard[k][l] = 0;
         }
     }
@@ -351,7 +356,7 @@ void rotatePiece() {
     for (int k = 0; k < 4; k++) {
         for (int l = 0; l < 4; l++) {
             if (pieces[piece_shape][piece_variant][k][l]) {
-                pieceboard[i - k][j + l] = piece_color;
+                pieceboard[ycord - k][xcord + l] = piece_color;
             }
         }
     }
