@@ -116,15 +116,15 @@ void keyDetect() {
 
 void drawBoard() {
     const int OFFSET = 10, DISPLACEMENT = 2;
-    int y1cord = OFFSET - DISPLACEMENT,
-        y2cord = screenHeight() - OFFSET + DISPLACEMENT,
+    int y1cord = OFFSET,
+        y2cord = screenHeight() - OFFSET,
         blockwidth = (y2cord - y1cord) / ROWS,
-        x1cord = (screenWidth() - blockwidth * COLUMNS) / 2 - DISPLACEMENT,
-        x2cord = screenWidth() - x1cord + DISPLACEMENT;
-    line(x1cord, y1cord, x2cord, y1cord, WHITE); //TOP
-    line(x1cord, y2cord, x2cord, y2cord, WHITE); //BOTTOM
-    line(x1cord, y1cord, x1cord, y2cord, WHITE); //LEFT
-    line(x2cord, y1cord, x2cord, y2cord, WHITE); //RIGHT
+        x1cord = (screenWidth() - blockwidth * COLUMNS) / 2,
+        x2cord = screenWidth() - x1cord;
+    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, WHITE); //TOP
+    line(x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //BOTTOM
+    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //LEFT
+    line(x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //RIGHT
 }
 
 int randomInt(int range_start, int range_end) {
@@ -285,9 +285,9 @@ void checkCleanRow() {
 }
 
 void CleanRow(int height) {
-    for (int i = height; i < ROWS; i++) {
+    for (int i = height; i < ROWS - 1; i++) {
         for (int j = 0; j < COLUMNS; j++) {
-            board[i - 1][j] = board[i][j];
+            board[i][j] = board[i + 1][j];
         }
     }
 }
