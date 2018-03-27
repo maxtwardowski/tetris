@@ -360,6 +360,7 @@ void rotatePiece() {
             }
         }
     }
+    piece_position = xcord;
 }
 
 void animateDrop() {
