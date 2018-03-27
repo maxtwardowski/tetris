@@ -10,7 +10,7 @@
 
 #define ROWS 20
 #define COLUMNS 10
-#define THRESHOLD 300
+#define THRESHOLD 1600
 
 #define DOWN 1
 #define LEFT 2
@@ -267,13 +267,15 @@ void dropThePiece() {
 }
 
 void checkCleanRow() {
-    int color;
     for (int i = 0; i < ROWS; i++) {
-        color = board[i][0];
         for (int j = 0; j < COLUMNS; j++) {
-            if (board[i][j] != color)
+            if (!board[i][j])
                 break;
-            if (j == COLUMNS - 1 && board[i][j] == color && color != BLACK) {
+            if (j == COLUMNS - 1 && board[i][j]) {
+                cleanScreen();
+                drawBoard();
+                drawBlocks(board);
+                drawBlocks(pieceboard);
                 updateScreen();
                 SDL_Delay(900);
                 CleanRow(i);
