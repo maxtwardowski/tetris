@@ -1,3 +1,7 @@
+//DO OGARNIĘCIA
+//obracanie
+//kolizje boczne
+
 #include "primlib.h"
 #include <stdlib.h>
 #include <math.h>
