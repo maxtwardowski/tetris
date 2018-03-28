@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include "tetris.h"
 
 //BLACK, RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW, WHITE
 //0-7
@@ -148,7 +149,7 @@ void pickNewPiece() {
     int const spawning_position = 4;
     if (newpieceonscreen == false) {
         piece_shape = randomInt(0, 6);
-        piece_color = randomInt(1, 7);
+        piece_color = YELLOW;
         piece_variant = 0;
         piece_position = spawning_position;
         piece_collision = false;
@@ -156,9 +157,10 @@ void pickNewPiece() {
         piece_collision_right = false;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (pieces[piece_shape][piece_variant][i][j]) {
+                if (pieces[piece_shape][piece_variant][i][j] == 1)
                     pieceboard[ROWS - i - 1][j + spawning_position] = piece_color;
-                }
+                else if (pieces[piece_shape][piece_variant][i][j] == 2)
+                    pieceboard[ROWS - i - 1][j + spawning_position] = RED;
             }
         }
         newpieceonscreen = true;
@@ -276,36 +278,7 @@ void fallingPieces() {
 }
 
 void dropThePiece() {
-    /*const int OFFSET = 10, BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS;
-    int x_base = (screenWidth() - BLOCKWIDTH * COLUMNS) / 2,
-        y_base = screenHeight() - OFFSET,
-        x_cord,
-        y_cord = y_base;
-*/
     while (piece_collision == false) {
-/*        int mover = 0;
-        while (mover != BLOCKWIDTH) {
-            cleanScreen();
-            drawBoard();
-            //drawBlocks(board);
-            for (int i = 0; i < ROWS; i++) {
-                x_cord = x_base;
-                for (int j = 0; j < COLUMNS; j++) {
-                    if (pieceboard[i][j]) {
-                        filledRect(x_cord,
-                                   y_cord,
-                                   x_cord + BLOCKWIDTH,
-                                   y_cord - BLOCKWIDTH,
-                                   pieceboard[i][j]);
-                    }
-                    x_cord += BLOCKWIDTH;
-                }
-                y_cord -= BLOCKWIDTH + 1;
-            }
-            updateScreen();
-            SDL_Delay(1000 / 60);
-            mover++;
-        }*/
         movePiece(DOWN);
     }
 }
@@ -383,11 +356,51 @@ void rotatePiece() {
         }
     }
 
+
+    int centerpieceX, centerpieceY;
+
     for (int k = 0; k < 4; k++) {
         for (int l = 0; l < 4; l++) {
-            if (pieces[piece_shape][piece_variant][k][l]) {
-                pieceboard[ycord - k][xcord + l] = piece_color;
+            if (pieces[piece_shape][piece_variant][k][l] == 2) {
+                centerpieceY = k;
+                centerpieceX = l;
+                k = 4;
+                l = 4;
             }
+        }
+    }
+
+    pieceboard[ycord][xcord] = RED;
+
+    //rightbot
+    for (int i = 0; i < 4 - centerpieceY; i++) {
+        for (int j = 0; j < 4 - centerpieceX; j++) {
+            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+                    pieceboard[ycord - i][xcord + j] = piece_color;
+        }
+    }
+
+    //leftbot
+    for (int i = 0; i < 4 - centerpieceY; i++) {
+        for (int j = 0; j < 4 - centerpieceX; j++) {
+            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+                pieceboard[ycord - i][xcord - j] = piece_color;
+        }
+    }
+
+    //righttop
+    for (int i = 0; i < centerpieceY; i++) {
+        for (int j = 0; j < 4 - centerpieceX; j++) {
+            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+                pieceboard[ycord + i][xcord + j] = piece_color;
+        }
+    }
+
+    //lefttop
+    for (int i = 0; i < centerpieceY; i++) {
+        for (int j = 0; j < centerpieceX; j++) {
+            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+                pieceboard[ycord + i][xcord - j] = piece_color;
         }
     }
     piece_position = xcord;
