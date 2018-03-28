@@ -50,6 +50,7 @@ void checkCleanRow();
 void CleanRow(int height);
 void checkHorizontalCollision();
 void rotatePiece();
+void animateDrop();
 
 int main(int argc, char* argv[]) {
 
@@ -275,7 +276,36 @@ void fallingPieces() {
 }
 
 void dropThePiece() {
+    /*const int OFFSET = 10, BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS;
+    int x_base = (screenWidth() - BLOCKWIDTH * COLUMNS) / 2,
+        y_base = screenHeight() - OFFSET,
+        x_cord,
+        y_cord = y_base;
+*/
     while (piece_collision == false) {
+/*        int mover = 0;
+        while (mover != BLOCKWIDTH) {
+            cleanScreen();
+            drawBoard();
+            //drawBlocks(board);
+            for (int i = 0; i < ROWS; i++) {
+                x_cord = x_base;
+                for (int j = 0; j < COLUMNS; j++) {
+                    if (pieceboard[i][j]) {
+                        filledRect(x_cord,
+                                   y_cord,
+                                   x_cord + BLOCKWIDTH,
+                                   y_cord - BLOCKWIDTH,
+                                   pieceboard[i][j]);
+                    }
+                    x_cord += BLOCKWIDTH;
+                }
+                y_cord -= BLOCKWIDTH + 1;
+            }
+            updateScreen();
+            SDL_Delay(1000 / 60);
+            mover++;
+        }*/
         movePiece(DOWN);
     }
 }
@@ -291,7 +321,7 @@ void checkCleanRow() {
                 drawBlocks(board);
                 drawBlocks(pieceboard);
                 updateScreen();
-                SDL_Delay(900);
+                SDL_Delay(400);
                 CleanRow(i);
             }
         }
@@ -361,8 +391,4 @@ void rotatePiece() {
         }
     }
     piece_position = xcord;
-}
-
-void animateDrop() {
-
 }
