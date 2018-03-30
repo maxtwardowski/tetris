@@ -18,6 +18,9 @@
 #define LEFT 2
 #define RIGHT 3
 
+#define BLOCKCOLOR GREEN
+#define PIVOTCOLOR BLUE
+
 //the main structures of the game
 int board[ROWS][COLUMNS],
     pieceboard[ROWS][COLUMNS],
@@ -48,8 +51,6 @@ void checkCleanRow();
 void CleanRow(int height);
 void checkHorizontalCollision();
 void rotatePiece();
-void animateDrop();
-void printboard();
 
 int main(int argc, char* argv[]) {
 
@@ -110,15 +111,9 @@ void keyDetect() {
         }
         rotatePiece();
     } else if (key == SDLK_LEFT) {
-        if (piece_position) {
-            piece_position--;
-            movePiece(LEFT);
-        }
+        movePiece(LEFT);
     } else if (key == SDLK_RIGHT) {
-        if (piece_position + getPieceWidth() < COLUMNS - 1) {
-            piece_position++;
-            movePiece(RIGHT);
-        }
+        movePiece(RIGHT);
     } else if (key == SDLK_RETURN) {
         dropThePiece();
     } else if (key == SDLK_ESCAPE)
@@ -147,18 +142,18 @@ void pickNewPiece() {
     int const spawning_position = COLUMNS / 2 - 1;
     if (newpieceonscreen == false) {
         piece_shape = randomInt(0, 6);
-        piece_color = YELLOW;
+        piece_color = BLOCKCOLOR;
         piece_variant = 0;
         piece_position = spawning_position;
         piece_collision = false;
         piece_collision_left = false;
         piece_collision_right = false;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < PIECELENGTH; i++) {
+            for (int j = 0; j < PIECELENGTH; j++) {
                 if (pieces[piece_shape][piece_variant][i][j] == 1)
                     pieceboard[ROWS - i - 1][j + spawning_position] = piece_color;
                 else if (pieces[piece_shape][piece_variant][i][j] == 2)
-                    pieceboard[ROWS - i - 1][j + spawning_position] = RED;
+                    pieceboard[ROWS - i - 1][j + spawning_position] = PIVOTCOLOR;
             }
         }
         newpieceonscreen = true;
@@ -186,15 +181,17 @@ void movePiece(int direction) {
             newpieceonscreen = false;
         }
     } else if (direction == LEFT && !piece_collision_left) {
-            for (int i = 0; i < COLUMNS; i++) {
-                for (int j = 0; j < ROWS; j++) {
-                    if (pieceboard[j][i]) {
-                        pieceboard[j][i - 1] = pieceboard[j][i];
-                        pieceboard[j][i] = 0;
-                    }
+        piece_position--;
+        for (int i = 0; i < COLUMNS; i++) {
+            for (int j = 0; j < ROWS; j++) {
+                if (pieceboard[j][i]) {
+                    pieceboard[j][i - 1] = pieceboard[j][i];
+                    pieceboard[j][i] = 0;
                 }
             }
+        }
     } else if (direction == RIGHT && !piece_collision_right) {
+        piece_position++;
         for (int i = COLUMNS - 1; i >= 0; i--) {
             for (int j = ROWS - 1; j >= 0; j--) {
                 if (pieceboard[j][i]) {
@@ -231,11 +228,11 @@ void drawBlocks(int array[ROWS][COLUMNS]) {
 
 int getPieceWidth() {
     int piecewidth = -1, widthcounter = -1;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < PIECELENGTH; i++) {
         if (widthcounter > piecewidth)
             piecewidth = widthcounter;
         widthcounter = -1;
-        for (int j = 0; j < 4; j++) {
+        for (int j = 0; j < PIECELENGTH; j++) {
             if (pieces[piece_shape][piece_variant][i][j])
                 widthcounter++;
             else
@@ -249,7 +246,7 @@ void embedBlock() {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (pieceboard[i][j]) {
-                board[i][j] = pieceboard[i][j];
+                board[i][j] = piece_color;
                 pieceboard[i][j] = 0;
             }
         }
@@ -292,7 +289,7 @@ void checkCleanRow() {
                 drawBlocks(board);
                 drawBlocks(pieceboard);
                 updateScreen();
-                SDL_Delay(400);
+                SDL_Delay(380);
                 CleanRow(i);
             }
         }
@@ -315,9 +312,13 @@ void checkHorizontalCollision() {
                 piece_collision_left = true;
                 i = ROWS;
                 j = COLUMNS;
-            } else if (pieceboard[i][j] && j && !board[i][j - 1])
+            } else if (pieceboard[i][j] && j == 0) {
+                piece_collision_left = true;
+                i = ROWS;
+                j = COLUMNS;
+            }
+            else if (pieceboard[i][j] && j && !board[i][j - 1])
                 piece_collision_left = false;
-
         }
     }
     //checking right side
@@ -327,21 +328,40 @@ void checkHorizontalCollision() {
                 piece_collision_right = true;
                 i = ROWS;
                 j = -1;
-            } else if (pieceboard[i][j] && j < COLUMNS && !board[i][j + 1])
+            } else if (pieceboard[i][j] && j == COLUMNS - 1) {
+                piece_collision_right = true;
+                i = ROWS;
+                j = -1;
+            }
+            else if (pieceboard[i][j] && j < COLUMNS && !board[i][j + 1])
                 piece_collision_right = false;
         }
     }
 }
 
 void rotatePiece() {
+    //locating the pivot before the rotation
     int ycord, xcord;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j] == RED) {
+            if (pieceboard[i][j] == PIVOTCOLOR) {
                 ycord = i;
                 xcord = j;
                 i = ROWS;
                 j = COLUMNS;
+            }
+        }
+    }
+
+    //locating the new pivot in the already rotated piece
+    int centerpieceX, centerpieceY;
+    for (int k = 0; k < PIECELENGTH; k++) {
+        for (int l = 0; l < PIECELENGTH; l++) {
+            if (pieces[piece_shape][piece_variant][k][l] == 2) {
+                centerpieceY = k;
+                centerpieceX = l;
+                k = PIECELENGTH;
+                l = PIECELENGTH;
             }
         }
     }
@@ -353,69 +373,44 @@ void rotatePiece() {
         }
     }
 
-    int centerpieceX, centerpieceY;
-
-    for (int k = 0; k < 4; k++) {
-        for (int l = 0; l < 4; l++) {
-            if (pieces[piece_shape][piece_variant][k][l] == 2) {
-                centerpieceY = k;
-                centerpieceX = l;
-                k = 4;
-                l = 4;
-            }
-        }
+    //Preventing bugs if the rotated figure is wider than the original
+    if (!xcord && centerpieceX) {
+        for (int i = 0; i < centerpieceX; i++)
+            xcord++;
+    } else if (xcord == COLUMNS - 1 && centerpieceX) {
+        for (int i = 0; i < centerpieceX; i++)
+            xcord--;
     }
 
-    pieceboard[ycord][xcord] = RED;
+    pieceboard[ycord][xcord] = PIVOTCOLOR; //making the pivot stay in the pieceboard
 
-    //rightbot
-    for (int i = 0; i < 4 - centerpieceY; i++) {
-        for (int j = 0; j < 4 - centerpieceX; j++) {
+    //Bottom-right
+    for (int i = 0; i < PIECELENGTH - centerpieceY; i++) {
+        for (int j = 0; j < PIECELENGTH - centerpieceX; j++) {
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] && !pieceboard[ycord - i][xcord + j])
                     pieceboard[ycord - i][xcord + j] = piece_color;
         }
     }
-
-    //leftbot
-    for (int i = 0; i < 4 - centerpieceY; i++) {
+    //Bottom-left
+    for (int i = 0; i < PIECELENGTH - centerpieceY; i++) {
         for (int j = 0; j < centerpieceX + 1; j++) {
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX - j] && !pieceboard[ycord - i][xcord - j])
                 pieceboard[ycord - i][xcord - j] = piece_color;
         }
     }
-
-    //righttop
+    //Top-right
     for (int i = 0; i < centerpieceY + 1; i++) {
-        for (int j = 0; j < 4 - centerpieceX; j++) {
+        for (int j = 0; j < PIECELENGTH - centerpieceX; j++) {
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX + j] && !pieceboard[ycord + i][xcord + j])
                 pieceboard[ycord + i][xcord + j] = piece_color;
         }
     }
-
-    //lefttop
+    //Top-left
     for (int i = 0; i < centerpieceY + 1; i++) {
         for (int j = 0; j < centerpieceX + 1; j++) {
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX - j] && !pieceboard[ycord + i][xcord - j])
                 pieceboard[ycord + i][xcord - j] = piece_color;
         }
     }
-
-    printf("%d, %d\n", piece_shape, piece_variant);
-    printboard();
-    //SDL_Delay(10000000);
     piece_position = xcord;
-}
-
-void printboard() {
-    printf("==============\n");
-    for (int i = ROWS - 1; i >= 0; i--) {
-        printf("\n");
-        for (int j = 0; j < COLUMNS; j++) {
-            if (!pieceboard[i][j])
-                printf("-\t");
-            else
-                printf("%d\t", pieceboard[i][j]);
-        }
-    }
-    printf("\n==============\n");
 }
