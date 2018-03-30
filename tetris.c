@@ -10,12 +10,9 @@
 #include <unistd.h>
 #include "tetris.h"
 
-//BLACK, RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW, WHITE
-//0-7
-
 #define ROWS 20
 #define COLUMNS 10
-#define THRESHOLD 300
+#define THRESHOLD 1600
 
 #define DOWN 1
 #define LEFT 2
@@ -52,6 +49,7 @@ void CleanRow(int height);
 void checkHorizontalCollision();
 void rotatePiece();
 void animateDrop();
+void printboard();
 
 int main(int argc, char* argv[]) {
 
@@ -146,7 +144,7 @@ int randomInt(int range_start, int range_end) {
 }
 
 void pickNewPiece() {
-    int const spawning_position = 4;
+    int const spawning_position = COLUMNS / 2 - 1;
     if (newpieceonscreen == false) {
         piece_shape = randomInt(0, 6);
         piece_color = YELLOW;
@@ -337,15 +335,14 @@ void checkHorizontalCollision() {
 
 void rotatePiece() {
     int ycord, xcord;
-    for (int i = ROWS - 1; i >= 0; i--) {
+    for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j]) {
+            if (pieceboard[i][j] == RED) {
                 ycord = i;
                 xcord = j;
-                i = -1;
+                i = ROWS;
                 j = COLUMNS;
             }
-
         }
     }
 
@@ -355,7 +352,6 @@ void rotatePiece() {
             pieceboard[k][l] = 0;
         }
     }
-
 
     int centerpieceX, centerpieceY;
 
@@ -375,33 +371,51 @@ void rotatePiece() {
     //rightbot
     for (int i = 0; i < 4 - centerpieceY; i++) {
         for (int j = 0; j < 4 - centerpieceX; j++) {
-            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+            if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] && !pieceboard[ycord - i][xcord + j])
                     pieceboard[ycord - i][xcord + j] = piece_color;
         }
     }
 
     //leftbot
     for (int i = 0; i < 4 - centerpieceY; i++) {
-        for (int j = 0; j < 4 - centerpieceX; j++) {
-            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+        for (int j = 0; j < centerpieceX + 1; j++) {
+            if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX - j] && !pieceboard[ycord - i][xcord - j])
                 pieceboard[ycord - i][xcord - j] = piece_color;
         }
     }
 
     //righttop
-    for (int i = 0; i < centerpieceY; i++) {
+    for (int i = 0; i < centerpieceY + 1; i++) {
         for (int j = 0; j < 4 - centerpieceX; j++) {
-            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+            if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX + j] && !pieceboard[ycord + i][xcord + j])
                 pieceboard[ycord + i][xcord + j] = piece_color;
         }
     }
 
     //lefttop
-    for (int i = 0; i < centerpieceY; i++) {
-        for (int j = 0; j < centerpieceX; j++) {
-            if (i != 0 && j != 0 && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] == 1)
+    for (int i = 0; i < centerpieceY + 1; i++) {
+        for (int j = 0; j < centerpieceX + 1; j++) {
+            if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX - j] && !pieceboard[ycord + i][xcord - j])
                 pieceboard[ycord + i][xcord - j] = piece_color;
         }
     }
+
+    printf("%d, %d\n", piece_shape, piece_variant);
+    printboard();
+    //SDL_Delay(10000000);
     piece_position = xcord;
+}
+
+void printboard() {
+    printf("==============\n");
+    for (int i = ROWS - 1; i >= 0; i--) {
+        printf("\n");
+        for (int j = 0; j < COLUMNS; j++) {
+            if (!pieceboard[i][j])
+                printf("-\t");
+            else
+                printf("%d\t", pieceboard[i][j]);
+        }
+    }
+    printf("\n==============\n");
 }
