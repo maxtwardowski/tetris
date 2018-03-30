@@ -18,6 +18,5 @@ void updateScreen();
 int pollkey();
 int getkey();
 int isKeyDown(int key);
-extern int pieces[7][4][4][4];
 
 #endif /* __PRIMLIB_H__ */
