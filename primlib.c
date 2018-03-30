@@ -4,13 +4,9 @@
 #include <math.h>
 #include <time.h>
 #include <assert.h>
-
 #include <SDL/SDL.h>
-
 #include <SDL/SDL_gfxPrimitives.h>
-
 #include "primlib.h"
-
 
 static SDL_Surface *screen;
 static Uint32 colors[COLOR_MAX] = {0x000000ff,
@@ -147,8 +143,8 @@ int initGraph()
 	videoflags = SDL_SWSURFACE | SDL_DOUBLEBUF;
 
 	/* Set 640x480 video mode */
-	if ( (screen=SDL_SetVideoMode(640,500,video_bpp,videoflags)) == NULL ) {
-		fprintf(stderr, "Couldn't set %ix%i video mode: %s\n",640,480,SDL_GetError());
+	if ( (screen=SDL_SetVideoMode(480,720,video_bpp,videoflags)) == NULL ) {
+		fprintf(stderr, "Couldn't set %ix%i video mode: %s\n",640,500,SDL_GetError());
 		return 2;
 	}
     return 0;

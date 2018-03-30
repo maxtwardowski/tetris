@@ -1,7 +1,3 @@
-//DO OGARNIĘCIA
-//obracanie
-//kolizje boczne
-
 #include "primlib.h"
 #include <stdlib.h>
 #include <math.h>
@@ -17,6 +13,7 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
+#define PIVOT 2
 
 #define BLOCKCOLOR YELLOW
 #define PIVOTCOLOR RED
@@ -84,13 +81,13 @@ void keyDetect() {
     int key = pollkey();
     if (key == SDLK_UP) {
         if (piece_variant == 0) {
-            piece_variant = 3;
+            piece_variant = PIECELENGTH - 1;
         } else {
             piece_variant--;
         }
         rotatePiece();
     } else if (key == SDLK_DOWN) {
-        if (piece_variant == 3) {
+        if (piece_variant == PIECELENGTH - 1) {
             piece_variant = 0;
         } else {
             piece_variant++;
@@ -194,7 +191,6 @@ void drawBlocks(int array[ROWS][COLUMNS]) {
         y_base = screenHeight() - OFFSET,
         x_cord,
         y_cord = y_base;
-
     for (int i = 0; i < ROWS; i++) {
         x_cord = x_base;
         for (int j = 0; j < COLUMNS; j++) {
@@ -224,7 +220,7 @@ void embedBlock() {
 
 void checkGameOver() {
     const int delay = 2000,
-              xposition = 200,
+              xposition = 250,
               yposition = 200;
     for (int i = 0; i < COLUMNS; i++) {
         if (board[ROWS - 1][i] != 0) {
@@ -330,7 +326,7 @@ void rotatePiece() {
     int centerpieceX, centerpieceY;
     for (int k = 0; k < PIECELENGTH; k++) {
         for (int l = 0; l < PIECELENGTH; l++) {
-            if (pieces[piece_shape][piece_variant][k][l] == 2) {
+            if (pieces[piece_shape][piece_variant][k][l] == PIVOT) {
                 centerpieceY = k;
                 centerpieceX = l;
                 k = PIECELENGTH;
