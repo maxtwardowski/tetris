@@ -18,8 +18,10 @@
 #define LEFT 2
 #define RIGHT 3
 
-#define BLOCKCOLOR GREEN
-#define PIVOTCOLOR BLUE
+#define BLOCKCOLOR YELLOW
+#define PIVOTCOLOR RED
+#define BACKGROUNDCOLOR BLACK
+#define BOARDCOLOR WHITE
 
 //the main structures of the game
 int board[ROWS][COLUMNS],
@@ -27,7 +29,6 @@ int board[ROWS][COLUMNS],
     boardinfo[COLUMNS],
     piece_shape,
     piece_variant,
-    piece_position,
     piece_color,
     gameregulator;
 bool newpieceonscreen = false,
@@ -42,7 +43,6 @@ int randomInt(int range_start, int range_end);
 void pickNewPiece();
 void movePiece(int direction);
 void drawBlocks(int array[ROWS][COLUMNS]);
-int getPieceWidth();
 void embedBlock();
 void checkGameOver();
 void fallingPieces();
@@ -73,13 +73,11 @@ int main(int argc, char* argv[]) {
         checkGameOver();
         fallingPieces();
     }
-
     return 0;
 }
 
 void cleanScreen() {
-    //Cleans the screen drawing a black background
-	filledRect(0, 0, screenWidth(), screenHeight(), BLACK);
+	filledRect(0, 0, screenWidth(), screenHeight(), BACKGROUNDCOLOR);
 }
 
 void keyDetect() {
@@ -87,27 +85,15 @@ void keyDetect() {
     if (key == SDLK_UP) {
         if (piece_variant == 0) {
             piece_variant = 3;
-            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
-                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
-            }
         } else {
             piece_variant--;
-            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
-                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
-            }
         }
         rotatePiece();
     } else if (key == SDLK_DOWN) {
         if (piece_variant == 3) {
             piece_variant = 0;
-            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
-                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
-            }
         } else {
             piece_variant++;
-            if (getPieceWidth() + piece_position >= COLUMNS - 1) {
-                piece_position -= (getPieceWidth() + piece_position - (COLUMNS - 1));
-            }
         }
         rotatePiece();
     } else if (key == SDLK_LEFT) {
@@ -127,10 +113,10 @@ void drawBoard() {
         blockwidth = (y2cord - y1cord) / ROWS,
         x1cord = (screenWidth() - blockwidth * COLUMNS) / 2,
         x2cord = screenWidth() - x1cord;
-    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, WHITE); //TOP
-    line(x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //BOTTOM
-    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //LEFT
-    line(x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, WHITE); //RIGHT
+    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, BOARDCOLOR); //TOP
+    line(x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, BOARDCOLOR); //BOTTOM
+    line(x1cord - DISPLACEMENT, y1cord - DISPLACEMENT, x1cord - DISPLACEMENT, y2cord + DISPLACEMENT, BOARDCOLOR); //LEFT
+    line(x2cord + DISPLACEMENT, y1cord - DISPLACEMENT, x2cord + DISPLACEMENT, y2cord + DISPLACEMENT, BOARDCOLOR); //RIGHT
 }
 
 int randomInt(int range_start, int range_end) {
@@ -139,12 +125,13 @@ int randomInt(int range_start, int range_end) {
 }
 
 void pickNewPiece() {
-    int const spawning_position = COLUMNS / 2 - 1;
+    int const spawning_position = COLUMNS / 2 - 1,
+              rangestart = 0,
+              rangeend = 6;
     if (newpieceonscreen == false) {
-        piece_shape = randomInt(0, 6);
+        piece_shape = randomInt(rangestart, rangeend);
         piece_color = BLOCKCOLOR;
         piece_variant = 0;
-        piece_position = spawning_position;
         piece_collision = false;
         piece_collision_left = false;
         piece_collision_right = false;
@@ -164,7 +151,7 @@ void movePiece(int direction) {
     if (direction == DOWN) {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLUMNS; j++) {
-                if ((pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0)) {
+                if ((i && pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0)) {
                     piece_collision = true;
                 }
             }
@@ -181,7 +168,6 @@ void movePiece(int direction) {
             newpieceonscreen = false;
         }
     } else if (direction == LEFT && !piece_collision_left) {
-        piece_position--;
         for (int i = 0; i < COLUMNS; i++) {
             for (int j = 0; j < ROWS; j++) {
                 if (pieceboard[j][i]) {
@@ -191,7 +177,6 @@ void movePiece(int direction) {
             }
         }
     } else if (direction == RIGHT && !piece_collision_right) {
-        piece_position++;
         for (int i = COLUMNS - 1; i >= 0; i--) {
             for (int j = ROWS - 1; j >= 0; j--) {
                 if (pieceboard[j][i]) {
@@ -226,22 +211,6 @@ void drawBlocks(int array[ROWS][COLUMNS]) {
     }
 }
 
-int getPieceWidth() {
-    int piecewidth = -1, widthcounter = -1;
-    for (int i = 0; i < PIECELENGTH; i++) {
-        if (widthcounter > piecewidth)
-            piecewidth = widthcounter;
-        widthcounter = -1;
-        for (int j = 0; j < PIECELENGTH; j++) {
-            if (pieces[piece_shape][piece_variant][i][j])
-                widthcounter++;
-            else
-                break;
-        }
-    }
-    return piecewidth;
-}
-
 void embedBlock() {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
@@ -254,11 +223,14 @@ void embedBlock() {
 }
 
 void checkGameOver() {
+    const int delay = 2000,
+              xposition = 200,
+              yposition = 200;
     for (int i = 0; i < COLUMNS; i++) {
         if (board[ROWS - 1][i] != 0) {
-            textout(200, 200, "GAME OVER! TRY AGAIN.", RED);
+            textout(xposition, yposition, "GAME OVER! TRY AGAIN.", RED);
             updateScreen();
-            SDL_Delay(2000);
+            SDL_Delay(delay);
             exit(1);
         }
     }
@@ -279,6 +251,7 @@ void dropThePiece() {
 }
 
 void checkCleanRow() {
+    const int delay = 300;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (!board[i][j])
@@ -289,7 +262,7 @@ void checkCleanRow() {
                 drawBlocks(board);
                 drawBlocks(pieceboard);
                 updateScreen();
-                SDL_Delay(380);
+                SDL_Delay(delay);
                 CleanRow(i);
             }
         }
@@ -412,5 +385,4 @@ void rotatePiece() {
                 pieceboard[ycord + i][xcord - j] = piece_color;
         }
     }
-    piece_position = xcord;
 }
