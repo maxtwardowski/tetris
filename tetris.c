@@ -8,7 +8,7 @@
 
 #define ROWS 20
 #define COLUMNS 10
-#define THRESHOLD 1600
+#define TICKRATE 20
 
 #define DOWN 1
 #define LEFT 2
@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
         checkCleanRow();
         checkGameOver();
         fallingPieces();
+        SDL_Delay(1000 / 60);
     }
     return 0;
 }
@@ -233,7 +234,7 @@ void checkGameOver() {
 }
 
 void fallingPieces() {
-    if (gameregulator == THRESHOLD) {
+    if (gameregulator == TICKRATE) {
         movePiece(DOWN);
         gameregulator = 0;
     }
