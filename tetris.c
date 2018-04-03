@@ -22,16 +22,14 @@
 //the main structures of the game
 int board[ROWS][COLUMNS],
     pieceboard[ROWS][COLUMNS],
-    boardinfo[COLUMNS],
     piece_shape,
     piece_variant,
     piece_color,
-    gameregulator;
+    tick_manager;
 bool newpieceonscreen = false,
      piece_collision = false,
      piece_collision_left = false,
-     piece_collision_right = false,
-     rotation_possible = true;
+     piece_collision_right = false;
 
 void cleanScreen();
 void keyDetect();
@@ -233,11 +231,11 @@ void checkGameOver() {
 
 void fallingPieces() {
     //The actual falling animation
-    if (gameregulator == TICKRATE) {
+    if (tick_manager == TICKRATE) {
         movePiece(DOWN);
-        gameregulator = 0;
+        tick_manager = 0;
     }
-    gameregulator++;
+    tick_manager++;
 }
 
 void dropThePiece() {
