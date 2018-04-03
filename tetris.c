@@ -96,12 +96,25 @@ void keyDetect() {
             rotatePiece();
         else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
             rotatePiece();
-        else if (!piece_collision_right && !piece_collision_left)
-            rotatePiece();
-        else
+        else if (!piece_collision_right && !piece_collision_left) {
+            //locating the pivot
+            int ycord, xcord;
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLUMNS; j++) {
+                    if (pieceboard[i][j] == PIVOTCOLOR) {
+                        ycord = i;
+                        xcord = j;
+                        i = ROWS;
+                        j = COLUMNS;
+                    }
+                }
+            }
+            if (!board[ycord][xcord - getPieceWidth(LEFT)] && !board[ycord][xcord + getPieceWidth(RIGHT)])
+                rotatePiece();
+            else
+                piece_variant = oldvariant;
+        } else
             piece_variant = oldvariant;
-        printf("%d, %d | %d, %d\n", oldwidthleft, oldwidthright, getPieceWidth(LEFT), getPieceWidth(RIGHT));
-
     } else if (key == SDLK_DOWN && !piece_collision) {
         if (piece_variant == PIECELENGTH - 1) {
             oldvariant = piece_variant;
