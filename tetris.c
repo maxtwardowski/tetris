@@ -79,21 +79,45 @@ void cleanScreen() {
 void keyDetect() {
     int key = pollkey();
     checkVerticalCollision();
-    //int oldwidthleft = getPieceWidth(LEFT),
-        //oldwidthright = getPieceWidth(RIGHT);
+    checkHorizontalCollision();
+    int oldwidthleft = getPieceWidth(LEFT),
+        oldwidthright = getPieceWidth(RIGHT),
+        oldvariant;
     if (key == SDLK_UP && !piece_collision) {
-        if (piece_variant == 0)
+        if (piece_variant == 0) {
+            oldvariant = piece_variant;
             piece_variant = PIECELENGTH - 1;
-        else
+        }
+        else {
+            oldvariant = piece_variant;
             piece_variant--;
-        //if ()
+        }
+        if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
             rotatePiece();
-    } else if (key == SDLK_DOWN && !piece_collision) {
-        if (piece_variant == PIECELENGTH - 1)
-            piece_variant = 0;
+        else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
+            rotatePiece();
+        else if (!piece_collision_right && !piece_collision_left)
+            rotatePiece();
         else
+            piece_variant = oldvariant;
+        printf("%d, %d | %d, %d\n", oldwidthleft, oldwidthright, getPieceWidth(LEFT), getPieceWidth(RIGHT));
+
+    } else if (key == SDLK_DOWN && !piece_collision) {
+        if (piece_variant == PIECELENGTH - 1) {
+            oldvariant = piece_variant;
+            piece_variant = 0;
+        } else {
+            oldvariant = piece_variant;
             piece_variant++;
-        rotatePiece();
+        }
+        if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
+            rotatePiece();
+        else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
+            rotatePiece();
+        else if (!piece_collision_right && !piece_collision_left)
+            rotatePiece();
+        else
+            piece_variant = oldvariant;
     } else if (key == SDLK_LEFT)
         movePiece(LEFT);
       else if (key == SDLK_RIGHT)
@@ -332,12 +356,12 @@ void rotatePiece() {
         for (int l = 0; l < COLUMNS; l++)
             pieceboard[k][l] = 0;
     //Preventing bugs if the rotated figure is wider than the original
-    if (!xcord && centerpieceX)
+    /*if (!xcord && centerpieceX)
         for (int i = 0; i < centerpieceX; i++)
             xcord++;
     else if (xcord == COLUMNS - 1 && centerpieceX)
         for (int i = 0; i < centerpieceX; i++)
-            xcord--;
+            xcord--;*/
 
     pieceboard[ycord][xcord] = PIVOTCOLOR; //making the pivot stay in the pieceboard
 
@@ -371,23 +395,37 @@ void checkVerticalCollision() {
 }
 
 int getPieceWidth(int direction) {
-    int ycord, xcord, piecewidth = 0;
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLUMNS; j++) {
-            if (pieceboard[i][j] == PIVOTCOLOR) {
-                ycord = i;
-                xcord = j;
-                i = ROWS;
-                j = COLUMNS;
+    int piecewidth = 0;
+    bool colchecked;
+    if (direction == LEFT) {
+        for (int j = 0; j < PIECELENGTH; j++) {
+            colchecked = false;
+            for (int i = 0; i < PIECELENGTH; i++) {
+                if (!colchecked && pieces[piece_shape][piece_variant][i][j]) {
+                    piecewidth++;
+                    colchecked = true;
+                }
+                if (pieces[piece_shape][piece_variant][i][j] == 2) {
+                    i = PIECELENGTH;
+                    j = PIECELENGTH;
+                }
+            }
+        }
+    } else if (direction == RIGHT) {
+        for (int j = PIECELENGTH - 1; j >= 0; j--) {
+            colchecked = false;
+            for (int i = PIECELENGTH - 1; i >= 0; i--) {
+                if (!colchecked && pieces[piece_shape][piece_variant][i][j]) {
+                    piecewidth++;
+                    colchecked = true;
+                }
+                if (pieces[piece_shape][piece_variant][i][j] == 2) {
+                    i = -1;
+                    j = -1;
+                }
             }
         }
     }
 
-    if (direction == LEFT)
-        while (pieceboard[ycord][xcord + piecewidth])
-            piecewidth++;
-    else if (direction == RIGHT)
-        while (pieceboard[ycord][xcord - piecewidth])
-            piecewidth++;
-    return piecewidth;
+    return piecewidth - 1;
 }
