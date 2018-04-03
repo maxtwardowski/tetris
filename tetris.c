@@ -14,6 +14,8 @@
 #define RIGHT 3
 #define PIVOT 2
 
+
+
 #define BLOCKCOLOR YELLOW
 #define PIVOTCOLOR RED
 #define BACKGROUNDCOLOR BLACK
@@ -186,7 +188,9 @@ void movePiece(int direction) {
 }
 
 void drawBlocks(int array[ROWS][COLUMNS]) {
-    const int OFFSET = 10, BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS;
+    const int OFFSET = 10,
+              BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS,
+              ADDITIONALSPACE = 2;
     int x_base = (screenWidth() - BLOCKWIDTH * COLUMNS) / 2,
         y_base = screenHeight() - OFFSET,
         x_cord,
@@ -195,10 +199,10 @@ void drawBlocks(int array[ROWS][COLUMNS]) {
         x_cord = x_base;
         for (int j = 0; j < COLUMNS; j++) {
             if (array[i][j]) {
-                filledRect(x_cord,
-                           y_cord,
-                           x_cord + BLOCKWIDTH,
-                           y_cord - BLOCKWIDTH,
+                filledRect(x_cord + ADDITIONALSPACE,
+                           y_cord - ADDITIONALSPACE,
+                           x_cord + BLOCKWIDTH - ADDITIONALSPACE,
+                           y_cord - BLOCKWIDTH + ADDITIONALSPACE,
                            array[i][j]);
             }
             x_cord += BLOCKWIDTH;
