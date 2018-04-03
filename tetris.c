@@ -14,8 +14,6 @@
 #define RIGHT 3
 #define PIVOT 2
 
-
-
 #define BLOCKCOLOR YELLOW
 #define PIVOTCOLOR RED
 #define BACKGROUNDCOLOR BLACK
@@ -49,13 +47,12 @@ void checkCleanRow();
 void CleanRow(int height);
 void checkHorizontalCollision();
 void rotatePiece();
+void checkVerticalCollision();
+int getPieceWidth(int direction);
 
 int main(int argc, char* argv[]) {
-
-    if(initGraph()) {
+    if(initGraph())
         exit(3);
-    }
-
     srand(time(NULL));
 
     while(true) {
@@ -81,27 +78,29 @@ void cleanScreen() {
 
 void keyDetect() {
     int key = pollkey();
-    if (key == SDLK_UP) {
-        if (piece_variant == 0) {
+    checkVerticalCollision();
+    //int oldwidthleft = getPieceWidth(LEFT),
+        //oldwidthright = getPieceWidth(RIGHT);
+    if (key == SDLK_UP && !piece_collision) {
+        if (piece_variant == 0)
             piece_variant = PIECELENGTH - 1;
-        } else {
+        else
             piece_variant--;
-        }
-        rotatePiece();
-    } else if (key == SDLK_DOWN) {
-        if (piece_variant == PIECELENGTH - 1) {
+        //if ()
+            rotatePiece();
+    } else if (key == SDLK_DOWN && !piece_collision) {
+        if (piece_variant == PIECELENGTH - 1)
             piece_variant = 0;
-        } else {
+        else
             piece_variant++;
-        }
         rotatePiece();
-    } else if (key == SDLK_LEFT) {
+    } else if (key == SDLK_LEFT)
         movePiece(LEFT);
-    } else if (key == SDLK_RIGHT) {
+      else if (key == SDLK_RIGHT)
         movePiece(RIGHT);
-    } else if (key == SDLK_RETURN) {
+      else if (key == SDLK_RETURN)
         dropThePiece();
-    } else if (key == SDLK_ESCAPE)
+      else if (key == SDLK_ESCAPE)
         exit(1);
 }
 
@@ -148,13 +147,7 @@ void pickNewPiece() {
 
 void movePiece(int direction) {
     if (direction == DOWN) {
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLUMNS; j++) {
-                if ((i && pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0)) {
-                    piece_collision = true;
-                }
-            }
-        }
+        checkVerticalCollision();
         if (piece_collision == false) {
             for (int i = 0; i < ROWS; i++) {
                 for (int j = 0; j < COLUMNS; j++) {
@@ -245,9 +238,8 @@ void fallingPieces() {
 }
 
 void dropThePiece() {
-    while (piece_collision == false) {
+    while (piece_collision == false)
         movePiece(DOWN);
-    }
 }
 
 void checkCleanRow() {
@@ -270,11 +262,9 @@ void checkCleanRow() {
 }
 
 void CleanRow(int height) {
-    for (int i = height; i < ROWS - 1; i++) {
-        for (int j = 0; j < COLUMNS; j++) {
+    for (int i = height; i < ROWS - 1; i++)
+        for (int j = 0; j < COLUMNS; j++)
             board[i][j] = board[i + 1][j];
-        }
-    }
 }
 
 void checkHorizontalCollision() {
@@ -325,7 +315,6 @@ void rotatePiece() {
             }
         }
     }
-
     //locating the new pivot in the already rotated piece
     int centerpieceX, centerpieceY;
     for (int k = 0; k < PIECELENGTH; k++) {
@@ -338,51 +327,67 @@ void rotatePiece() {
             }
         }
     }
-
     //cleaning the pieceboard for the rotated piece
-    for (int k = 0; k < ROWS; k++) {
-        for (int l = 0; l < COLUMNS; l++) {
+    for (int k = 0; k < ROWS; k++)
+        for (int l = 0; l < COLUMNS; l++)
             pieceboard[k][l] = 0;
-        }
-    }
-
     //Preventing bugs if the rotated figure is wider than the original
-    if (!xcord && centerpieceX) {
+    if (!xcord && centerpieceX)
         for (int i = 0; i < centerpieceX; i++)
             xcord++;
-    } else if (xcord == COLUMNS - 1 && centerpieceX) {
+    else if (xcord == COLUMNS - 1 && centerpieceX)
         for (int i = 0; i < centerpieceX; i++)
             xcord--;
-    }
 
     pieceboard[ycord][xcord] = PIVOTCOLOR; //making the pivot stay in the pieceboard
 
     //Bottom-right
-    for (int i = 0; i < PIECELENGTH - centerpieceY; i++) {
-        for (int j = 0; j < PIECELENGTH - centerpieceX; j++) {
+    for (int i = 0; i < PIECELENGTH - centerpieceY; i++)
+        for (int j = 0; j < PIECELENGTH - centerpieceX; j++)
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX + j] && !pieceboard[ycord - i][xcord + j])
                     pieceboard[ycord - i][xcord + j] = piece_color;
-        }
-    }
     //Bottom-left
-    for (int i = 0; i < PIECELENGTH - centerpieceY; i++) {
-        for (int j = 0; j < centerpieceX + 1; j++) {
+    for (int i = 0; i < PIECELENGTH - centerpieceY; i++)
+        for (int j = 0; j < centerpieceX + 1; j++)
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY + i][centerpieceX - j] && !pieceboard[ycord - i][xcord - j])
                 pieceboard[ycord - i][xcord - j] = piece_color;
-        }
-    }
     //Top-right
-    for (int i = 0; i < centerpieceY + 1; i++) {
-        for (int j = 0; j < PIECELENGTH - centerpieceX; j++) {
+    for (int i = 0; i < centerpieceY + 1; i++)
+        for (int j = 0; j < PIECELENGTH - centerpieceX; j++)
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX + j] && !pieceboard[ycord + i][xcord + j])
                 pieceboard[ycord + i][xcord + j] = piece_color;
-        }
-    }
     //Top-left
-    for (int i = 0; i < centerpieceY + 1; i++) {
-        for (int j = 0; j < centerpieceX + 1; j++) {
+    for (int i = 0; i < centerpieceY + 1; i++)
+        for (int j = 0; j < centerpieceX + 1; j++)
             if ((i != 0 || j != 0) && pieces[piece_shape][piece_variant][centerpieceY - i][centerpieceX - j] && !pieceboard[ycord + i][xcord - j])
                 pieceboard[ycord + i][xcord - j] = piece_color;
+}
+
+void checkVerticalCollision() {
+    for (int i = 0; i < ROWS; i++)
+        for (int j = 0; j < COLUMNS; j++)
+            if ((i && pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0))
+                piece_collision = true;
+}
+
+int getPieceWidth(int direction) {
+    int ycord, xcord, piecewidth = 0;
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            if (pieceboard[i][j] == PIVOTCOLOR) {
+                ycord = i;
+                xcord = j;
+                i = ROWS;
+                j = COLUMNS;
+            }
         }
     }
+
+    if (direction == LEFT)
+        while (pieceboard[ycord][xcord + piecewidth])
+            piecewidth++;
+    else if (direction == RIGHT)
+        while (pieceboard[ycord][xcord - piecewidth])
+            piecewidth++;
+    return piecewidth;
 }
