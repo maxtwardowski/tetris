@@ -1,10 +1,8 @@
-#include "primlib.h"
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 #include <stdbool.h>
-#include <unistd.h>
 #include "tetris.h"
+#include "primlib.h"
 
 #define ROWS 20
 #define COLUMNS 10
