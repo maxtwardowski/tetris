@@ -30,7 +30,8 @@ int board[ROWS][COLUMNS],
 bool newpieceonscreen = false,
      piece_collision = false,
      piece_collision_left = false,
-     piece_collision_right = false;
+     piece_collision_right = false,
+     rotation_possible = true;
 
 void cleanScreen();
 void keyDetect();
@@ -49,6 +50,8 @@ void checkHorizontalCollision();
 void rotatePiece();
 void checkVerticalCollision();
 int getPieceWidth(int direction);
+void ExecuteKeyUP();
+void ExecuteKeyDOWN();
 
 int main(int argc, char* argv[]) {
     if(initGraph())
@@ -73,75 +76,31 @@ int main(int argc, char* argv[]) {
 }
 
 void cleanScreen() {
+    //Draws background
 	filledRect(0, 0, screenWidth(), screenHeight(), BACKGROUNDCOLOR);
 }
 
 void keyDetect() {
+    //Handles keyinput
     int key = pollkey();
     checkVerticalCollision();
     checkHorizontalCollision();
-    int oldwidthleft = getPieceWidth(LEFT),
-        oldwidthright = getPieceWidth(RIGHT),
-        oldvariant;
-    if (key == SDLK_UP && !piece_collision) {
-        if (piece_variant == 0) {
-            oldvariant = piece_variant;
-            piece_variant = PIECELENGTH - 1;
-        }
-        else {
-            oldvariant = piece_variant;
-            piece_variant--;
-        }
-        if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
-            rotatePiece();
-        else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
-            rotatePiece();
-        else if (!piece_collision_right && !piece_collision_left) {
-            //locating the pivot
-            int ycord, xcord;
-            for (int i = 0; i < ROWS; i++) {
-                for (int j = 0; j < COLUMNS; j++) {
-                    if (pieceboard[i][j] == PIVOTCOLOR) {
-                        ycord = i;
-                        xcord = j;
-                        i = ROWS;
-                        j = COLUMNS;
-                    }
-                }
-            }
-            if (!board[ycord][xcord - getPieceWidth(LEFT)] && !board[ycord][xcord + getPieceWidth(RIGHT)])
-                rotatePiece();
-            else
-                piece_variant = oldvariant;
-        } else
-            piece_variant = oldvariant;
-    } else if (key == SDLK_DOWN && !piece_collision) {
-        if (piece_variant == PIECELENGTH - 1) {
-            oldvariant = piece_variant;
-            piece_variant = 0;
-        } else {
-            oldvariant = piece_variant;
-            piece_variant++;
-        }
-        if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
-            rotatePiece();
-        else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
-            rotatePiece();
-        else if (!piece_collision_right && !piece_collision_left)
-            rotatePiece();
-        else
-            piece_variant = oldvariant;
-    } else if (key == SDLK_LEFT)
+    if (key == SDLK_UP && !piece_collision)
+        ExecuteKeyUP();
+    else if (key == SDLK_DOWN && !piece_collision)
+        ExecuteKeyDOWN();
+    else if (key == SDLK_LEFT)
         movePiece(LEFT);
-      else if (key == SDLK_RIGHT)
+    else if (key == SDLK_RIGHT)
         movePiece(RIGHT);
-      else if (key == SDLK_RETURN)
+    else if (key == SDLK_RETURN)
         dropThePiece();
-      else if (key == SDLK_ESCAPE)
+    else if (key == SDLK_ESCAPE)
         exit(1);
 }
 
 void drawBoard() {
+    //Draws the 'board' i.e. edges of the actual game area
     const int OFFSET = 10, DISPLACEMENT = 2;
     int y1cord = OFFSET,
         y2cord = screenHeight() - OFFSET,
@@ -155,16 +114,18 @@ void drawBoard() {
 }
 
 int randomInt(int range_start, int range_end) {
+    //Generated random integer from the [range_start; range_end] interval
     int random_int = rand() % (range_end - range_start + 1) + range_start; //+1 to avoid black
     return random_int;
 }
 
 void pickNewPiece() {
-    int const spawning_position = COLUMNS / 2 - 1,
-              rangestart = 0,
-              rangeend = 6;
+    //Picks a new piece if the old one got embedded
+    int const SPAWNING_POSITION = COLUMNS / 2 - 1,
+              RANGESTART = 0,
+              RANGEEND = 6;
     if (newpieceonscreen == false) {
-        piece_shape = randomInt(rangestart, rangeend);
+        piece_shape = randomInt(RANGESTART, RANGEEND);
         piece_color = BLOCKCOLOR;
         piece_variant = 0;
         piece_collision = false;
@@ -173,9 +134,9 @@ void pickNewPiece() {
         for (int i = 0; i < PIECELENGTH; i++) {
             for (int j = 0; j < PIECELENGTH; j++) {
                 if (pieces[piece_shape][piece_variant][i][j] == 1)
-                    pieceboard[ROWS - i - 1][j + spawning_position] = piece_color;
+                    pieceboard[ROWS - i - 1][j + SPAWNING_POSITION] = piece_color;
                 else if (pieces[piece_shape][piece_variant][i][j] == 2)
-                    pieceboard[ROWS - i - 1][j + spawning_position] = PIVOTCOLOR;
+                    pieceboard[ROWS - i - 1][j + SPAWNING_POSITION] = PIVOTCOLOR;
             }
         }
         newpieceonscreen = true;
@@ -183,6 +144,7 @@ void pickNewPiece() {
 }
 
 void movePiece(int direction) {
+    //Moves piece according to the chosen direction
     if (direction == DOWN) {
         checkVerticalCollision();
         if (piece_collision == false) {
@@ -218,6 +180,7 @@ void movePiece(int direction) {
 }
 
 void drawBlocks(int array[ROWS][COLUMNS]) {
+    //Draws graphical representation of an array filled with 'blocks'
     const int OFFSET = 10,
               BLOCKWIDTH = (screenHeight() - 2 * OFFSET) / ROWS,
               ADDITIONALSPACE = 2;
@@ -242,6 +205,7 @@ void drawBlocks(int array[ROWS][COLUMNS]) {
 }
 
 void embedBlock() {
+    //'Embeds' piece into the main board
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (pieceboard[i][j]) {
@@ -253,20 +217,22 @@ void embedBlock() {
 }
 
 void checkGameOver() {
-    const int delay = 2000,
-              xposition = 250,
-              yposition = 200;
+    //Checks if it's not already over ;)
+    const int DELAY = 2000,
+              XPOSITION = 250,
+              YPOSITION = 200;
     for (int i = 0; i < COLUMNS; i++) {
         if (board[ROWS - 1][i] != 0) {
-            textout(xposition, yposition, "GAME OVER! TRY AGAIN.", RED);
+            textout(XPOSITION, YPOSITION, "GAME OVER! TRY AGAIN.", RED);
             updateScreen();
-            SDL_Delay(delay);
+            SDL_Delay(DELAY);
             exit(1);
         }
     }
 }
 
 void fallingPieces() {
+    //The actual falling animation
     if (gameregulator == TICKRATE) {
         movePiece(DOWN);
         gameregulator = 0;
@@ -275,11 +241,13 @@ void fallingPieces() {
 }
 
 void dropThePiece() {
+    //Drops the piece as low as possible
     while (piece_collision == false)
         movePiece(DOWN);
 }
 
 void checkCleanRow() {
+    //Checks if there is a row to get rid of
     const int delay = 300;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
@@ -299,13 +267,15 @@ void checkCleanRow() {
 }
 
 void CleanRow(int height) {
+    //Removes a row if it's full of blocks
     for (int i = height; i < ROWS - 1; i++)
         for (int j = 0; j < COLUMNS; j++)
             board[i][j] = board[i + 1][j];
 }
 
 void checkHorizontalCollision() {
-    //checking left side
+    //Checks if collisions in horizontal axis occur
+    //LEFT
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (pieceboard[i][j] && j && board[i][j - 1]) {
@@ -321,7 +291,7 @@ void checkHorizontalCollision() {
                 piece_collision_left = false;
         }
     }
-    //checking right side
+    //RIGHT
     for (int i = 0; i < ROWS; i++) {
         for (int j = COLUMNS - 1; j >= 0; j--) {
             if (pieceboard[i][j] && j < COLUMNS && board[i][j + 1]) {
@@ -340,6 +310,7 @@ void checkHorizontalCollision() {
 }
 
 void rotatePiece() {
+    //Creates an illusion of rotating piece
     //locating the pivot before the rotation
     int ycord, xcord;
     for (int i = 0; i < ROWS; i++) {
@@ -368,16 +339,8 @@ void rotatePiece() {
     for (int k = 0; k < ROWS; k++)
         for (int l = 0; l < COLUMNS; l++)
             pieceboard[k][l] = 0;
-    //Preventing bugs if the rotated figure is wider than the original
-    /*if (!xcord && centerpieceX)
-        for (int i = 0; i < centerpieceX; i++)
-            xcord++;
-    else if (xcord == COLUMNS - 1 && centerpieceX)
-        for (int i = 0; i < centerpieceX; i++)
-            xcord--;*/
-
     pieceboard[ycord][xcord] = PIVOTCOLOR; //making the pivot stay in the pieceboard
-
+    //FOUR STAGE REDRAWING PROCESS
     //Bottom-right
     for (int i = 0; i < PIECELENGTH - centerpieceY; i++)
         for (int j = 0; j < PIECELENGTH - centerpieceX; j++)
@@ -401,6 +364,7 @@ void rotatePiece() {
 }
 
 void checkVerticalCollision() {
+    //Checks if vertical collisions occur
     for (int i = 0; i < ROWS; i++)
         for (int j = 0; j < COLUMNS; j++)
             if ((i && pieceboard[i][j] && board[i - 1][j]) || (pieceboard[i][j] && i == 0))
@@ -408,6 +372,7 @@ void checkVerticalCollision() {
 }
 
 int getPieceWidth(int direction) {
+    //Returns 'side-width' of a piece according to the direction given
     int piecewidth = 0;
     bool colchecked;
     if (direction == LEFT) {
@@ -439,6 +404,87 @@ int getPieceWidth(int direction) {
             }
         }
     }
-
     return piecewidth - 1;
+}
+
+void ExecuteKeyUP() {
+    //Executes SDLK_UP action triggered by keyinput
+    int oldwidthleft = getPieceWidth(LEFT),
+        oldwidthright = getPieceWidth(RIGHT),
+        oldvariant;
+    if (piece_variant == 0) {
+        oldvariant = piece_variant;
+        piece_variant = PIECELENGTH - 1;
+    }
+    else {
+        oldvariant = piece_variant;
+        piece_variant--;
+    }
+    if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
+        rotatePiece();
+    else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
+        rotatePiece();
+    else if (!piece_collision_right && !piece_collision_left) {
+        //locating the pivot
+        int ycord, xcord;
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMNS; j++) {
+                if (pieceboard[i][j] == PIVOTCOLOR) {
+                    ycord = i;
+                    xcord = j;
+                    i = ROWS;
+                    j = COLUMNS;
+                }
+            }
+        }
+        if (!board[ycord][xcord - getPieceWidth(LEFT)] &&
+            !board[ycord][xcord + getPieceWidth(RIGHT)] &&
+            xcord + getPieceWidth(RIGHT) <= COLUMNS - 1 &&
+            xcord - getPieceWidth(LEFT) >= 0)
+            rotatePiece();
+        else
+            piece_variant = oldvariant;
+    } else
+        piece_variant = oldvariant;
+}
+
+void ExecuteKeyDOWN() {
+    //Executes SDLK_DOWN action triggered by keyinput
+    int oldwidthleft = getPieceWidth(LEFT),
+        oldwidthright = getPieceWidth(RIGHT),
+        oldvariant;
+    if (piece_variant == PIECELENGTH - 1) {
+        oldvariant = piece_variant;
+        piece_variant = 0;
+    } else {
+        oldvariant = piece_variant;
+        piece_variant++;
+    }
+    if (piece_collision_left && (oldwidthleft >= getPieceWidth(LEFT)))
+        rotatePiece();
+    else if (piece_collision_right && (oldwidthright >= getPieceWidth(RIGHT)))
+        rotatePiece();
+    else if (!piece_collision_right && !piece_collision_left) {
+        //locating the pivot
+        int ycord, xcord;
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMNS; j++) {
+                if (pieceboard[i][j] == PIVOTCOLOR) {
+                    ycord = i;
+                    xcord = j;
+                    i = ROWS;
+                    j = COLUMNS;
+                }
+            }
+        }
+        if (!board[ycord][xcord - getPieceWidth(LEFT)] &&
+            !board[ycord][xcord + getPieceWidth(RIGHT)] &&
+            xcord + getPieceWidth(RIGHT) <= COLUMNS - 1 &&
+            xcord - getPieceWidth(LEFT) >= 0)
+            rotatePiece();
+        else
+            piece_variant = oldvariant;
+    }
+    else
+        piece_variant = oldvariant;
 }
