@@ -143,7 +143,7 @@ int initGraph()
 	videoflags = SDL_SWSURFACE | SDL_DOUBLEBUF;
 
 	/* Set 640x480 video mode */
-	if ( (screen=SDL_SetVideoMode(480,720,video_bpp,videoflags)) == NULL ) {
+	if ( (screen=SDL_SetVideoMode(720,720,video_bpp,videoflags)) == NULL ) {
 		fprintf(stderr, "Couldn't set %ix%i video mode: %s\n",640,500,SDL_GetError());
 		return 2;
 	}
