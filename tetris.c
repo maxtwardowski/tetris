@@ -494,7 +494,7 @@ void ExecuteKeyDOWN() {
 }
 
 bool checkRotation() {
-    int ycord, xcord;
+    int ycord, xcord, centerpieceX, centerpieceY;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++) {
             if (pieceboard[i][j] == PIVOTCOLOR) {
@@ -505,7 +505,6 @@ bool checkRotation() {
             }
         }
     }
-    int centerpieceX, centerpieceY;
     for (int k = 0; k < PIECELENGTH; k++) {
         for (int l = 0; l < PIECELENGTH; l++) {
             if (pieces[piece_shape][piece_variant][k][l] == PIVOT) {
